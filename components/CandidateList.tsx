@@ -1,0 +1,219 @@
+import React, { useState, useEffect, useMemo } from 'react';
+import { Candidate, Job, Stage } from '../types';
+import { summarizeResume } from '../services/geminiService';
+import Modal from './Modal';
+import { SparklesIcon, EditIcon, TrashIcon } from './icons';
+
+interface CandidateListProps {
+    candidates: Candidate[];
+    setCandidates: React.Dispatch<React.SetStateAction<Candidate[]>>;
+    jobs: Job[];
+    stages: Stage[];
+}
+
+const mockResumeText = "Experiência de 5 anos com Node.js e Express, desenvolvendo APIs RESTful para aplicações de larga escala. H proficiência em bancos de dados SQL (PostgreSQL) e NoSQL (MongoDB). Liderou um time de 3 desenvolvedores em um projeto de migração de monolito para microserviços. Forte conhecimento em Docker e Kubernetes. Graduado em Ciência da Computação pela USP.";
+
+const CandidateList: React.FC<CandidateListProps> = ({ candidates, setCandidates, jobs, stages }) => {
+  const [isLoadingSummary, setIsLoadingSummary] = useState(false);
+  
+  type ModalMode = 'details' | 'edit' | 'create';
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<ModalMode>('details');
+  const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
+
+  const emptyCandidate = useMemo<Omit<Candidate, 'id' | 'avatar' | 'resumeSummary'>>(() => ({
+    name: '',
+    jobId: jobs.length > 0 ? jobs[0].id : 0,
+    stageId: stages.length > 0 ? stages[0].id : 0,
+  }), [jobs, stages]);
+  
+  const [formData, setFormData] = useState(emptyCandidate);
+
+  useEffect(() => {
+    if (modalMode === 'edit' && selectedCandidate) {
+      setFormData({
+        name: selectedCandidate.name,
+        jobId: selectedCandidate.jobId,
+        stageId: selectedCandidate.stageId,
+      });
+    } else {
+      setFormData(emptyCandidate);
+    }
+  }, [modalMode, selectedCandidate, emptyCandidate]);
+
+
+  const handleSummarize = async (candidate: Candidate) => {
+    setSelectedCandidate(candidate);
+    setIsLoadingSummary(true);
+    const summary = await summarizeResume(mockResumeText);
+    const updatedCandidates = candidates.map(c => c.id === candidate.id ? { ...c, resumeSummary: summary } : c);
+    setCandidates(updatedCandidates);
+    setSelectedCandidate(prev => prev ? { ...prev, resumeSummary: summary } : null);
+    setIsLoadingSummary(false);
+  };
+
+  const openModal = (mode: ModalMode, candidate: Candidate | null = null) => {
+    setModalMode(mode);
+    setSelectedCandidate(candidate);
+    setModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
+    setSelectedCandidate(null);
+  };
+  
+  const handleDelete = (candidateId: number) => {
+    if (window.confirm('Tem certeza que deseja excluir este candidato?')) {
+        setCandidates(candidates.filter(c => c.id !== candidateId));
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({...prev, [name]: name === 'jobId' || name === 'stageId' ? parseInt(value) : value}));
+  };
+
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (modalMode === 'create') {
+        const newCandidate: Candidate = {
+            id: Math.max(...candidates.map(c => c.id).concat(0)) + 1,
+            avatar: `https://picsum.photos/seed/${Math.random()}/200`,
+            resumeSummary: '',
+            ...formData,
+        };
+        setCandidates([...candidates, newCandidate]);
+    } else if (modalMode === 'edit' && selectedCandidate) {
+        setCandidates(candidates.map(c => 
+            c.id === selectedCandidate.id ? { ...c, ...formData } : c
+        ));
+    }
+    closeModal();
+  };
+
+  const getJobTitle = (jobId: number) => jobs.find(j => j.id === jobId)?.title || 'N/A';
+  const getStageName = (stageId: number) => stages.find(s => s.id === stageId)?.name || 'N/A';
+  
+  const getStageColor = (stageId: number) => {
+    const stageName = getStageName(stageId)?.toLowerCase();
+    if (stageName?.includes('triagem')) return 'bg-sky-100 text-sky-800';
+    if (stageName?.includes('entrevista')) return 'bg-amber-100 text-amber-800';
+    if (stageName?.includes('oferta')) return 'bg-violet-100 text-violet-800';
+    if (stageName?.includes('contratado')) return 'bg-emerald-100 text-emerald-800';
+    return 'bg-gray-100 text-gray-800';
+  };
+
+  const renderModalContent = () => {
+    if (!selectedCandidate && modalMode !== 'create') return null;
+
+    if (modalMode === 'details') {
+      return (
+        <div className="p-2">
+            <h3 className="text-2xl font-bold text-gray-900 mb-4">{selectedCandidate!.name}</h3>
+            <p className="text-gray-600 mb-1"><span className="font-semibold">Vaga:</span> {getJobTitle(selectedCandidate!.jobId)}</p>
+            <p className="text-gray-600 mb-4"><span className="font-semibold">Etapa:</span> {getStageName(selectedCandidate!.stageId)}</p>
+            
+            <div className="bg-gray-50 p-4 rounded-lg">
+                <h4 className="font-semibold text-gray-800 mb-2 flex items-center">
+                    <SparklesIcon className="w-5 h-5 mr-2 text-indigo-600"/>
+                    Resumo do Currículo (IA)
+                </h4>
+                {isLoadingSummary && selectedCandidate?.id === selectedCandidate!.id ? (
+                    <p className="text-gray-500 italic">Gerando resumo...</p>
+                ) : (
+                    <p className="text-gray-700 whitespace-pre-wrap">{selectedCandidate!.resumeSummary || 'Clique em "Resumir CV" para gerar um resumo.'}</p>
+                )}
+            </div>
+        </div>
+      );
+    }
+
+    if (modalMode === 'create' || modalMode === 'edit') {
+        return (
+            <form onSubmit={handleFormSubmit} className="p-2">
+                <h3 className="text-2xl font-bold text-gray-900 mb-6">{modalMode === 'edit' ? 'Editar Candidato' : 'Adicionar Candidato'}</h3>
+                <div className="space-y-4">
+                    <div>
+                        <label htmlFor="name" className="block text-sm font-medium text-gray-700">Nome Completo</label>
+                        <input type="text" name="name" id="name" value={formData.name} onChange={handleInputChange} required className="mt-1 block w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
+                    </div>
+                    <div>
+                        <label htmlFor="jobId" className="block text-sm font-medium text-gray-700">Vaga Aplicada</label>
+                        <select name="jobId" id="jobId" value={formData.jobId} onChange={handleInputChange} className="mt-1 block w-full bg-white pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                            {jobs.map(job => <option key={job.id} value={job.id}>{job.title}</option>)}
+                        </select>
+                    </div>
+                    <div>
+                        <label htmlFor="stageId" className="block text-sm font-medium text-gray-700">Etapa</label>
+                        <select name="stageId" id="stageId" value={formData.stageId} onChange={handleInputChange} className="mt-1 block w-full bg-white pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                            {stages.map(stage => <option key={stage.id} value={stage.id}>{stage.name}</option>)}
+                        </select>
+                    </div>
+                </div>
+                <div className="mt-8 flex justify-end gap-3">
+                    <button type="button" onClick={closeModal} className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Cancelar</button>
+                    <button type="submit" className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Salvar</button>
+                </div>
+            </form>
+        )
+    }
+  };
+
+  return (
+    <>
+      <div>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+          <h2 className="text-2xl font-bold text-gray-800">Pipeline de Candidatos</h2>
+          <button onClick={() => openModal('create')} className="bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors w-full sm:w-auto">
+            Adicionar Candidato
+          </button>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left">
+            <thead className="bg-gray-50 border-b">
+              <tr>
+                <th className="p-4 text-sm font-semibold text-gray-600">Candidato</th>
+                <th className="p-4 text-sm font-semibold text-gray-600">Vaga</th>
+                <th className="p-4 text-sm font-semibold text-gray-600">Etapa</th>
+                <th className="p-4 text-sm font-semibold text-gray-600">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {candidates.map((candidate) => (
+                <tr key={candidate.id} className="border-b hover:bg-gray-50">
+                  <td className="p-4">
+                    <div className="flex items-center">
+                      <img src={candidate.avatar} alt={candidate.name} className="h-10 w-10 rounded-full mr-4" />
+                      <p className="font-semibold text-gray-900">{candidate.name}</p>
+                    </div>
+                  </td>
+                  <td className="p-4 text-gray-700">{getJobTitle(candidate.jobId)}</td>
+                  <td className="p-4">
+                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStageColor(candidate.stageId)}`}>
+                      {getStageName(candidate.stageId)}
+                    </span>
+                  </td>
+                  <td className="p-4 space-x-4 flex items-center">
+                    <button onClick={() => openModal('details', candidate)} className="text-indigo-600 hover:text-indigo-900 font-medium">Ver Detalhes</button>
+                    <button onClick={() => handleSummarize(candidate)} className="text-emerald-600 hover:text-emerald-900 font-medium" disabled={isLoadingSummary && selectedCandidate?.id === candidate.id}>
+                        {isLoadingSummary && selectedCandidate?.id === candidate.id ? 'Resumindo...' : 'Resumir CV'}
+                    </button>
+                    <button onClick={() => openModal('edit', candidate)} className="text-gray-500 hover:text-indigo-800"><EditIcon className="w-5 h-5" /></button>
+                    <button onClick={() => handleDelete(candidate.id)} className="text-gray-500 hover:text-rose-600"><TrashIcon className="w-5 h-5" /></button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <Modal isOpen={modalOpen} onClose={closeModal}>
+        {renderModalContent()}
+      </Modal>
+    </>
+  );
+};
+
+export default CandidateList;
