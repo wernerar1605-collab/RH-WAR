@@ -1,8 +1,8 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { Candidate, Job, Stage } from '../types';
-import { summarizeResume } from '../services/geminiService';
 import Modal from './Modal';
-import { SparklesIcon, EditIcon, TrashIcon } from './icons';
+import { EditIcon, TrashIcon } from './icons';
 
 interface CandidateListProps {
     candidates: Candidate[];
@@ -11,10 +11,7 @@ interface CandidateListProps {
     stages: Stage[];
 }
 
-const mockResumeText = "Experiência de 5 anos com Node.js e Express, desenvolvendo APIs RESTful para aplicações de larga escala. H proficiência em bancos de dados SQL (PostgreSQL) e NoSQL (MongoDB). Liderou um time de 3 desenvolvedores em um projeto de migração de monolito para microserviços. Forte conhecimento em Docker e Kubernetes. Graduado em Ciência da Computação pela USP.";
-
 const CandidateList: React.FC<CandidateListProps> = ({ candidates, setCandidates, jobs, stages }) => {
-  const [isLoadingSummary, setIsLoadingSummary] = useState(false);
   
   type ModalMode = 'details' | 'edit' | 'create';
   const [modalOpen, setModalOpen] = useState(false);
@@ -40,17 +37,6 @@ const CandidateList: React.FC<CandidateListProps> = ({ candidates, setCandidates
       setFormData(emptyCandidate);
     }
   }, [modalMode, selectedCandidate, emptyCandidate]);
-
-
-  const handleSummarize = async (candidate: Candidate) => {
-    setSelectedCandidate(candidate);
-    setIsLoadingSummary(true);
-    const summary = await summarizeResume(mockResumeText);
-    const updatedCandidates = candidates.map(c => c.id === candidate.id ? { ...c, resumeSummary: summary } : c);
-    setCandidates(updatedCandidates);
-    setSelectedCandidate(prev => prev ? { ...prev, resumeSummary: summary } : null);
-    setIsLoadingSummary(false);
-  };
 
   const openModal = (mode: ModalMode, candidate: Candidate | null = null) => {
     setModalMode(mode);
@@ -113,18 +99,6 @@ const CandidateList: React.FC<CandidateListProps> = ({ candidates, setCandidates
             <h3 className="text-2xl font-bold text-gray-900 mb-4">{selectedCandidate!.name}</h3>
             <p className="text-gray-600 mb-1"><span className="font-semibold">Vaga:</span> {getJobTitle(selectedCandidate!.jobId)}</p>
             <p className="text-gray-600 mb-4"><span className="font-semibold">Etapa:</span> {getStageName(selectedCandidate!.stageId)}</p>
-            
-            <div className="bg-gray-50 p-4 rounded-lg">
-                <h4 className="font-semibold text-gray-800 mb-2 flex items-center">
-                    <SparklesIcon className="w-5 h-5 mr-2 text-indigo-600"/>
-                    Resumo do Currículo (IA)
-                </h4>
-                {isLoadingSummary && selectedCandidate?.id === selectedCandidate!.id ? (
-                    <p className="text-gray-500 italic">Gerando resumo...</p>
-                ) : (
-                    <p className="text-gray-700 whitespace-pre-wrap">{selectedCandidate!.resumeSummary || 'Clique em "Resumir CV" para gerar um resumo.'}</p>
-                )}
-            </div>
         </div>
       );
     }
@@ -196,9 +170,6 @@ const CandidateList: React.FC<CandidateListProps> = ({ candidates, setCandidates
                   </td>
                   <td className="p-4 space-x-4 flex items-center">
                     <button onClick={() => openModal('details', candidate)} className="text-indigo-600 hover:text-indigo-900 font-medium">Ver Detalhes</button>
-                    <button onClick={() => handleSummarize(candidate)} className="text-emerald-600 hover:text-emerald-900 font-medium" disabled={isLoadingSummary && selectedCandidate?.id === candidate.id}>
-                        {isLoadingSummary && selectedCandidate?.id === candidate.id ? 'Resumindo...' : 'Resumir CV'}
-                    </button>
                     <button onClick={() => openModal('edit', candidate)} className="text-gray-500 hover:text-indigo-800"><EditIcon className="w-5 h-5" /></button>
                     <button onClick={() => handleDelete(candidate.id)} className="text-gray-500 hover:text-rose-600"><TrashIcon className="w-5 h-5" /></button>
                   </td>
