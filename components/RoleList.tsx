@@ -13,13 +13,25 @@ const RoleList: React.FC<RoleListProps> = ({ roles, setRoles, departments }) => 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
     const [currentRole, setCurrentRole] = useState<Role | null>(null);
-    const [formData, setFormData] = useState({ name: '', departmentId: departments.length > 0 ? departments[0].id : 0 });
+    const [formData, setFormData] = useState({ 
+        name: '', 
+        departmentId: departments.length > 0 ? departments[0].id : 0,
+        salary: '' 
+    });
 
     useEffect(() => {
         if (modalMode === 'edit' && currentRole) {
-            setFormData({ name: currentRole.name, departmentId: currentRole.departmentId });
+            setFormData({ 
+                name: currentRole.name, 
+                departmentId: currentRole.departmentId,
+                salary: currentRole.salary 
+            });
         } else {
-            setFormData({ name: '', departmentId: departments.length > 0 ? departments[0].id : 0 });
+            setFormData({ 
+                name: '', 
+                departmentId: departments.length > 0 ? departments[0].id : 0,
+                salary: '' 
+            });
         }
     }, [modalMode, currentRole, departments]);
 
@@ -70,6 +82,7 @@ const RoleList: React.FC<RoleListProps> = ({ roles, setRoles, departments }) => 
                         <tr>
                             <th className="p-4 text-sm font-semibold text-gray-600">Nome do Cargo</th>
                             <th className="p-4 text-sm font-semibold text-gray-600">Departamento</th>
+                            <th className="p-4 text-sm font-semibold text-gray-600">Salário Base</th>
                             <th className="p-4 text-sm font-semibold text-gray-600 w-24">Ações</th>
                         </tr>
                     </thead>
@@ -78,6 +91,7 @@ const RoleList: React.FC<RoleListProps> = ({ roles, setRoles, departments }) => 
                             <tr key={role.id} className="border-b hover:bg-gray-50">
                                 <td className="p-4 font-medium text-gray-800">{role.name}</td>
                                 <td className="p-4 text-gray-700">{getDepartmentName(role.departmentId)}</td>
+                                <td className="p-4 text-gray-700">R$ {role.salary}</td>
                                 <td className="p-4">
                                     <div className="flex items-center space-x-4">
                                         <button onClick={() => openModal('edit', role)} className="text-gray-500 hover:text-indigo-600">
@@ -108,6 +122,10 @@ const RoleList: React.FC<RoleListProps> = ({ roles, setRoles, departments }) => 
                                     <option key={dept.id} value={dept.id}>{dept.name}</option>
                                 ))}
                             </select>
+                        </div>
+                        <div>
+                            <label htmlFor="salary" className="block text-sm font-medium text-gray-700">Salário Base</label>
+                            <input type="text" name="salary" id="salary" value={formData.salary} onChange={handleInputChange} placeholder="0,00" required className="mt-1 block w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
                         </div>
                     </div>
                     <div className="mt-8 flex justify-end gap-3">

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { Candidate, Job, Stage } from '../types';
 import Modal from './Modal';
@@ -11,6 +10,13 @@ interface CandidateListProps {
     stages: Stage[];
 }
 
+const toBase64 = (file: File): Promise<string> => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = error => reject(error);
+});
+
 const CandidateList: React.FC<CandidateListProps> = ({ candidates, setCandidates, jobs, stages }) => {
   
   type ModalMode = 'details' | 'edit' | 'create';
@@ -22,6 +28,7 @@ const CandidateList: React.FC<CandidateListProps> = ({ candidates, setCandidates
     name: '',
     jobId: jobs.length > 0 ? jobs[0].id : 0,
     stageId: stages.length > 0 ? stages[0].id : 0,
+    resume: '',
   }), [jobs, stages]);
   
   const [formData, setFormData] = useState(emptyCandidate);
@@ -32,6 +39,7 @@ const CandidateList: React.FC<CandidateListProps> = ({ candidates, setCandidates
         name: selectedCandidate.name,
         jobId: selectedCandidate.jobId,
         stageId: selectedCandidate.stageId,
+        resume: selectedCandidate.resume,
       });
     } else {
       setFormData(emptyCandidate);
@@ -58,6 +66,17 @@ const CandidateList: React.FC<CandidateListProps> = ({ candidates, setCandidates
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({...prev, [name]: name === 'jobId' || name === 'stageId' ? parseInt(value) : value}));
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+        try {
+            const base64 = await toBase64(e.target.files[0]);
+            setFormData(prev => ({ ...prev, resume: base64 }));
+        } catch (err) {
+            console.error(err);
+        }
+    }
   };
 
   const handleFormSubmit = (e: React.FormEvent) => {
@@ -99,6 +118,22 @@ const CandidateList: React.FC<CandidateListProps> = ({ candidates, setCandidates
             <h3 className="text-2xl font-bold text-gray-900 mb-4">{selectedCandidate!.name}</h3>
             <p className="text-gray-600 mb-1"><span className="font-semibold">Vaga:</span> {getJobTitle(selectedCandidate!.jobId)}</p>
             <p className="text-gray-600 mb-4"><span className="font-semibold">Etapa:</span> {getStageName(selectedCandidate!.stageId)}</p>
+            
+            {selectedCandidate!.resume ? (
+                <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                     <h4 className="font-semibold text-gray-800 mb-2">Currículo</h4>
+                     <a 
+                        href={selectedCandidate!.resume} 
+                        download={`curriculo_${selectedCandidate!.name.replace(/\s+/g, '_')}`}
+                        className="inline-flex items-center text-indigo-600 hover:text-indigo-800 font-medium"
+                     >
+                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        Baixar Currículo
+                     </a>
+                </div>
+            ) : (
+                <p className="mt-4 text-gray-500 italic">Nenhum currículo anexado.</p>
+            )}
         </div>
       );
     }
@@ -123,6 +158,23 @@ const CandidateList: React.FC<CandidateListProps> = ({ candidates, setCandidates
                         <select name="stageId" id="stageId" value={formData.stageId} onChange={handleInputChange} className="mt-1 block w-full bg-white pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
                             {stages.map(stage => <option key={stage.id} value={stage.id}>{stage.name}</option>)}
                         </select>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Currículo</label>
+                        <div className="mt-1 flex items-center">
+                            <input 
+                                type="file" 
+                                onChange={handleFileChange}
+                                accept=".pdf,.doc,.docx"
+                                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                            />
+                        </div>
+                        {formData.resume && (
+                            <p className="mt-2 text-xs text-green-600 flex items-center">
+                                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+                                Arquivo anexado
+                            </p>
+                        )}
                     </div>
                 </div>
                 <div className="mt-8 flex justify-end gap-3">

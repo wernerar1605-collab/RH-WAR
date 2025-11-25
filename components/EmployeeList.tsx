@@ -4,11 +4,11 @@ import Modal from './Modal';
 import { EditIcon, TrashIcon, ProfileIcon } from './icons';
 
 const mockEmployees: Employee[] = [
-  { id: 1, name: 'Ana Silva', role: 'Desenvolvedora Frontend', department: 'Tecnologia', email: 'ana.silva@example.com', avatar: 'https://picsum.photos/seed/1/200', status: 'Ativo', dataDeAdmissao: '2022-03-15', cpf: '111.111.111-11', rg: '11.111.111-1', dataDeNascimento: '1990-05-10', telefone: '(11) 98888-7777', salario: '8000,00', regimeDeTrabalho: 'CLT' },
-  { id: 2, name: 'Bruno Costa', role: 'Designer UX/UI', department: 'Produto', email: 'bruno.costa@example.com', avatar: 'https://picsum.photos/seed/2/200', status: 'Ativo', dataDeAdmissao: '2021-11-20', cpf: '222.222.222-22', rg: '22.222.222-2', dataDeNascimento: '1992-08-25', telefone: '(11) 97777-6666', salario: '7500,00', regimeDeTrabalho: 'CLT' },
-  { id: 3, name: 'Carla Dias', role: 'Gerente de Projetos', department: 'Tecnologia', email: 'carla.dias@example.com', avatar: 'https://picsum.photos/seed/3/200', status: 'Ativo', dataDeAdmissao: '2020-01-10', cpf: '333.333.333-33', rg: '33.333.333-3', dataDeNascimento: '1988-02-14', telefone: '(11) 96666-5555', salario: '12000,00', regimeDeTrabalho: 'PJ' },
-  { id: 4, name: 'Diego Faria', role: 'Engenheiro de Dados', department: 'Dados', email: 'diego.faria@example.com', avatar: 'https://picsum.photos/seed/4/200', status: 'Inativo', dataDeAdmissao: '2023-05-01', cpf: '444.444.444-44', rg: '44.444.444-4', dataDeNascimento: '1995-12-01', telefone: '(11) 95555-4444', salario: '9500,00', regimeDeTrabalho: 'CLT' },
-  { id: 5, name: 'Elisa Rocha', role: 'Analista de RH', department: 'RH', email: 'elisa.rocha@example.com', avatar: 'https://picsum.photos/seed/5/200', status: 'Ativo', dataDeAdmissao: '2022-09-05', cpf: '555.555.555-55', rg: '55.555.555-5', dataDeNascimento: '1993-07-30', telefone: '(11) 94444-3333', salario: '6000,00', regimeDeTrabalho: 'CLT' },
+  { id: 1, name: 'Ana Silva', role: 'Desenvolvedora Frontend', department: 'Tecnologia', email: 'ana.silva@example.com', avatar: 'https://picsum.photos/seed/1/200', status: 'Ativo', dataDeAdmissao: '2022-03-15', cpf: '111.111.111-11', rg: '11.111.111-1', dataDeNascimento: '1990-05-10', telefone: '(11) 98888-7777', regimeDeTrabalho: 'CLT' },
+  { id: 2, name: 'Bruno Costa', role: 'Designer UX/UI', department: 'Produto', email: 'bruno.costa@example.com', avatar: 'https://picsum.photos/seed/2/200', status: 'Ativo', dataDeAdmissao: '2021-11-20', cpf: '222.222.222-22', rg: '22.222.222-2', dataDeNascimento: '1992-08-25', telefone: '(11) 97777-6666', regimeDeTrabalho: 'CLT' },
+  { id: 3, name: 'Carla Dias', role: 'Gerente de Projetos', department: 'Tecnologia', email: 'carla.dias@example.com', avatar: 'https://picsum.photos/seed/3/200', status: 'Ativo', dataDeAdmissao: '2020-01-10', cpf: '333.333.333-33', rg: '33.333.333-3', dataDeNascimento: '1988-02-14', telefone: '(11) 96666-5555', regimeDeTrabalho: 'PJ' },
+  { id: 4, name: 'Diego Faria', role: 'Engenheiro de Dados', department: 'Dados', email: 'diego.faria@example.com', avatar: 'https://picsum.photos/seed/4/200', status: 'Inativo', dataDeAdmissao: '2023-05-01', cpf: '444.444.444-44', rg: '44.444.444-4', dataDeNascimento: '1995-12-01', telefone: '(11) 95555-4444', regimeDeTrabalho: 'CLT' },
+  { id: 5, name: 'Elisa Rocha', role: 'Analista de RH', department: 'RH', email: 'elisa.rocha@example.com', avatar: 'https://picsum.photos/seed/5/200', status: 'Ativo', dataDeAdmissao: '2022-09-05', cpf: '555.555.555-55', rg: '55.555.555-5', dataDeNascimento: '1993-07-30', telefone: '(11) 94444-3333', regimeDeTrabalho: 'CLT' },
 ];
 
 const toBase64 = (file: File): Promise<string> => new Promise((resolve, reject) => {
@@ -28,7 +28,6 @@ const emptyEmployee: Omit<Employee, 'id' | 'status'> = {
     role: '',
     department: '',
     dataDeAdmissao: '',
-    salario: '',
     regimeDeTrabalho: '',
     avatar: '',
 };
@@ -280,10 +279,6 @@ const EmployeeList: React.FC<EmployeeListProps> = ({ departments, roles, contrac
                             <input type="date" name="dataDeAdmissao" id="dataDeAdmissao" value={formData.dataDeAdmissao} onChange={handleInputChange} required className="mt-1 block w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
                         </div>
                         <div>
-                            <label htmlFor="salario" className="block text-sm font-medium text-gray-700">Salário *</label>
-                            <input type="text" name="salario" id="salario" value={formData.salario} onChange={handleInputChange} required placeholder="0,00" className="mt-1 block w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
-                        </div>
-                        <div className="md:col-span-2">
                             <label htmlFor="regimeDeTrabalho" className="block text-sm font-medium text-gray-700">Regime de Trabalho</label>
                             <select name="regimeDeTrabalho" id="regimeDeTrabalho" value={formData.regimeDeTrabalho} onChange={handleInputChange} className="mt-1 block w-full bg-white pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
                                 <option value="">Selecione o regime</option>

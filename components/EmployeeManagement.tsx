@@ -16,15 +16,15 @@ const mockDepartments: Department[] = [
 ];
 
 const mockRoles: Role[] = [
-    { id: 1, name: 'Desenvolvedor Frontend', departmentId: 1 },
-    { id: 2, name: 'Designer UX/UI', departmentId: 2 },
-    { id: 3, name: 'Gerente de Projetos', departmentId: 1 },
-    { id: 4, name: 'Engenheiro de Dados', departmentId: 3 },
-    { id: 5, name: 'Analista de RH', departmentId: 4 },
-    { id: 6, name: 'Product Manager', departmentId: 2 },
-    { id: 7, name: 'Desenvolvedor Backend', departmentId: 1 },
-    { id: 8, name: 'Analista de Marketing', departmentId: 5 },
-    { id: 9, name: 'Analista Financeiro', departmentId: 6 },
+    { id: 1, name: 'Desenvolvedor Frontend', departmentId: 1, salary: '8000,00' },
+    { id: 2, name: 'Designer UX/UI', departmentId: 2, salary: '7500,00' },
+    { id: 3, name: 'Gerente de Projetos', departmentId: 1, salary: '12000,00' },
+    { id: 4, name: 'Engenheiro de Dados', departmentId: 3, salary: '9500,00' },
+    { id: 5, name: 'Analista de RH', departmentId: 4, salary: '6000,00' },
+    { id: 6, name: 'Product Manager', departmentId: 2, salary: '11000,00' },
+    { id: 7, name: 'Desenvolvedor Backend', departmentId: 1, salary: '8500,00' },
+    { id: 8, name: 'Analista de Marketing', departmentId: 5, salary: '6500,00' },
+    { id: 9, name: 'Analista Financeiro', departmentId: 6, salary: '6800,00' },
 ];
 
 const mockContracts: Contract[] = [

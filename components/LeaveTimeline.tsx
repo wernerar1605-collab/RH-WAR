@@ -40,7 +40,7 @@ const getLeaveStyle = (type: LeaveType) => {
 };
 
 const LeaveTimeline: React.FC<LeaveTimelineProps> = ({ employees, requests }) => {
-  const [currentDate, setCurrentDate] = useState(new Date('2024-08-01T00:00:00'));
+  const [currentDate, setCurrentDate] = useState(new Date());
   const [searchTerm, setSearchTerm] = useState('');
 
   const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
@@ -93,14 +93,13 @@ const LeaveTimeline: React.FC<LeaveTimelineProps> = ({ employees, requests }) =>
             <div className="border-b grid grid-flow-col auto-cols-[3rem]">
               {monthDays.map(day => {
                 const isToday = day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
-                const isHighlighted = (day === 8 && month === 7 && year === 2024);
                 
                 return (
                   <div
                     key={day}
                     className={`flex-shrink-0 h-12 flex items-center justify-center font-medium text-sm`}
                   >
-                    <span className={`flex items-center justify-center rounded-full w-8 h-8 ${isToday ? 'bg-indigo-600 text-white' : ''} ${isHighlighted ? 'bg-gray-900 text-white' : 'text-gray-600'}`}>
+                    <span className={`flex items-center justify-center rounded-full w-8 h-8 ${isToday ? 'bg-indigo-600 text-white' : 'text-gray-600'}`}>
                       {day}
                     </span>
                   </div>
