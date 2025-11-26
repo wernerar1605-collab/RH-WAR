@@ -10,6 +10,7 @@ export interface Employee {
   role: string;
   department: string;
   dataDeAdmissao: string;
+  salario: string;
   regimeDeTrabalho: string;
   avatar: string;
   status: 'Ativo' | 'Inativo';
@@ -30,11 +31,11 @@ export interface LeaveRequest {
 export interface Candidate {
   id: number;
   name: string;
-  jobId: number;
+  jobIds: number[];
   stageId: number;
-  resumeSummary: string;
   avatar: string;
-  resume: string; // Base64 string of the uploaded file
+  resume?: string; // Base64 encoded file
+  resumeName?: string; // Original filename
 }
 
 export interface PerformanceReview {
@@ -65,7 +66,6 @@ export interface Role {
   id: number;
   name: string;
   departmentId: number;
-  salary: string;
 }
 
 export interface Contract {

@@ -1,7 +1,8 @@
-import React from 'react';
-import { HomeIcon, UsersIcon, BriefcaseIcon, LeaveIcon, StarIcon, LogOutIcon, ProfileIcon, XIcon } from './icons';
 
-type View = 'dashboard' | 'employees' | 'recruitment' | 'leaves' | 'performance' | 'profiles';
+import React from 'react';
+import { HomeIcon, UsersIcon, BriefcaseIcon, LeaveIcon, StarIcon, LogOutIcon, ProfileIcon, XIcon, ChartBarIcon } from './icons';
+
+type View = 'dashboard' | 'employees' | 'recruitment' | 'leaves' | 'performance' | 'profiles' | 'reports';
 
 interface SidebarProps {
   activeView: View;
@@ -18,6 +19,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, onLogout, 
     { id: 'recruitment', label: 'Recrutamento', icon: BriefcaseIcon },
     { id: 'leaves', label: 'Licenças', icon: LeaveIcon },
     { id: 'performance', label: 'Avaliações', icon: StarIcon },
+    { id: 'reports', label: 'Relatórios', icon: ChartBarIcon },
     { id: 'profiles', label: 'Perfis', icon: ProfileIcon },
   ] as const;
 

@@ -5,13 +5,13 @@ import { EditIcon, TrashIcon } from './icons';
 
 // FIX: Added missing properties to each employee object to match the Employee type.
 const mockEmployees: Employee[] = [
-  { id: 1, name: 'Ana Silva', role: 'Desenvolvedora Frontend', department: 'Tecnologia', email: 'ana.silva@example.com', avatar: 'https://picsum.photos/seed/1/200', status: 'Ativo', dataDeAdmissao: '2022-03-15', cpf: '111.111.111-11', rg: '11.111.111-1', dataDeNascimento: '1990-05-10', telefone: '(11) 98888-7777', regimeDeTrabalho: 'CLT' },
-  { id: 3, name: 'Carla Dias', role: 'Gerente de Projetos', department: 'Tecnologia', email: 'carla.dias@example.com', avatar: 'https://picsum.photos/seed/3/200', status: 'Ativo', dataDeAdmissao: '2020-01-10', cpf: '333.333.333-33', rg: '33.333.333-3', dataDeNascimento: '1988-02-14', telefone: '(11) 96666-5555', regimeDeTrabalho: 'PJ' },
+  { id: 1, name: 'Ana Silva', role: 'Desenvolvedora Frontend', department: 'Tecnologia', email: 'ana.silva@example.com', avatar: 'https://picsum.photos/seed/1/200', status: 'Ativo', dataDeAdmissao: '2022-03-15', cpf: '111.111.111-11', rg: '11.111.111-1', dataDeNascimento: '1990-05-10', telefone: '(11) 98888-7777', salario: '8000,00', regimeDeTrabalho: 'CLT' },
+  { id: 3, name: 'Carla Dias', role: 'Gerente de Projetos', department: 'Tecnologia', email: 'carla.dias@example.com', avatar: 'https://picsum.photos/seed/3/200', status: 'Ativo', dataDeAdmissao: '2020-01-10', cpf: '333.333.333-33', rg: '33.333.333-3', dataDeNascimento: '1988-02-14', telefone: '(11) 96666-5555', salario: '12000,00', regimeDeTrabalho: 'PJ' },
 ];
 
 const mockReviews: Review[] = [
   { id: 1, employee: mockEmployees[0], date: '2024-06-30', reviewer: 'Gerente de TI', feedback: 'Excelente desempenho técnico e proatividade.', rating: 5, aiSuggestion: '' },
-  { id: 2, employee: mockEmployees[1] || mockEmployees[0], date: '2024-06-28', reviewer: 'Diretor de Produto', feedback: 'Ótima liderança, mas precisa melhorar a comunicação com stakeholders.', rating: 4, aiSuggestion: '' },
+  { id: 2, employee: mockEmployees[1], date: '2024-06-28', reviewer: 'Diretor de Produto', feedback: 'Ótima liderança, mas precisa melhorar a comunicação com stakeholders.', rating: 4, aiSuggestion: '' },
 ];
 
 const PerformanceReview: React.FC = () => {

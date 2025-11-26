@@ -23,20 +23,6 @@ export const generateJobDescription = async (role: string, requirements: string)
   }
 };
 
-export const summarizeResume = async (resumeText: string): Promise<string> => {
-  try {
-    const prompt = `Resuma o seguinte currículo em 3 pontos principais, destacando as experiências e habilidades mais relevantes. Currículo: """${resumeText}"""`;
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
-    });
-    return response.text;
-  } catch (error) {
-    console.error("Error summarizing resume:", error);
-    return "Não foi possível resumir o currículo.";
-  }
-};
-
 export const generatePerformanceFeedback = async (employeeName: string, role: string, performanceData: string): Promise<string> => {
   try {
     const prompt = `Gere um feedback construtivo para a avaliação de desempenho de ${employeeName}, que atua como ${role}. Dados de desempenho: "${performanceData}". O feedback deve ser equilibrado, destacando pontos fortes e áreas para desenvolvimento, com sugestões de melhoria claras e acionáveis.`;

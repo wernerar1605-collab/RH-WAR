@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
@@ -6,10 +7,11 @@ import RecruitmentManagement from './components/RecruitmentManagement';
 import LeaveManagement from './components/LeaveManagement';
 import PerformanceReview from './components/PerformanceReview';
 import Login from './components/Login';
-import ProfileList from './components/ProfileList'; // Assuming ProfileList exists
+import ProfileList from './components/ProfileList';
+import Reports from './components/Reports';
 import { MenuIcon } from './components/icons';
 
-type View = 'dashboard' | 'employees' | 'recruitment' | 'leaves' | 'performance' | 'profiles';
+type View = 'dashboard' | 'employees' | 'recruitment' | 'leaves' | 'performance' | 'profiles' | 'reports';
 
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -40,6 +42,8 @@ const App: React.FC = () => {
         return <LeaveManagement />;
       case 'performance':
         return <PerformanceReview />;
+      case 'reports':
+        return <Reports />;
       case 'profiles':
         return <ProfileList />;
       default:

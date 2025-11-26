@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { Candidate, Job, Stage } from '../types';
 
@@ -17,7 +18,7 @@ const HiringProcess: React.FC<HiringProcessProps> = ({ candidates, jobs, stages,
         if (selectedJobId === 'all') {
             return candidates;
         }
-        return candidates.filter(c => c.jobId === selectedJobId);
+        return candidates.filter(c => c.jobIds.includes(selectedJobId as number));
     }, [candidates, selectedJobId]);
 
     const handleDragStart = (e: React.DragEvent<HTMLDivElement>, candidateId: number) => {
@@ -54,6 +55,10 @@ const HiringProcess: React.FC<HiringProcessProps> = ({ candidates, jobs, stages,
     const handleDragEnd = () => {
         setDraggedCandidateId(null);
         setDragOverStageId(null);
+    };
+
+    const getCandidateJobTitles = (candidateJobIds: number[]) => {
+        return jobs.filter(j => candidateJobIds.includes(j.id)).map(j => j.title).join(', ');
     };
 
     return (
@@ -103,7 +108,14 @@ const HiringProcess: React.FC<HiringProcessProps> = ({ candidates, jobs, stages,
                                             <div>
                                                 <p className="font-semibold text-sm text-gray-900">{candidate.name}</p>
                                                 {selectedJobId === 'all' && (
-                                                    <p className="text-xs text-gray-500">{jobs.find(j => j.id === candidate.jobId)?.title || 'Vaga não encontrada'}</p>
+                                                    <p className="text-xs text-gray-500 truncate max-w-[150px]" title={getCandidateJobTitles(candidate.jobIds)}>
+                                                        {getCandidateJobTitles(candidate.jobIds) || 'Sem vaga'}
+                                                    </p>
+                                                )}
+                                                {selectedJobId !== 'all' && (
+                                                     <p className="text-xs text-gray-500">
+                                                        {jobs.find(j => j.id === selectedJobId)?.title}
+                                                     </p>
                                                 )}
                                             </div>
                                         </div>
