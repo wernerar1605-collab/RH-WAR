@@ -1,9 +1,11 @@
+
 import React, { useState } from 'react';
 import EmployeeList from './EmployeeList';
 import DepartmentList from './DepartmentList';
 import RoleList from './RoleList';
 import ContractList from './ContractList';
-import { Department, Role, Contract } from '../types';
+import EmployeeReports from './EmployeeReports';
+import { Department, Role, Contract, Employee } from '../types';
 
 // Mock data moved here from child components to be managed by the parent
 const mockDepartments: Department[] = [
@@ -34,9 +36,13 @@ const mockContracts: Contract[] = [
     { id: 4, name: 'Temporário', description: 'Contrato de Trabalho Temporário' },
 ];
 
+interface EmployeeManagementProps {
+    employees: Employee[];
+    setEmployees: React.Dispatch<React.SetStateAction<Employee[]>>;
+}
 
-const EmployeeManagement: React.FC = () => {
-    type Tab = 'employees' | 'departments' | 'roles' | 'contracts';
+const EmployeeManagement: React.FC<EmployeeManagementProps> = ({ employees, setEmployees }) => {
+    type Tab = 'employees' | 'departments' | 'roles' | 'contracts' | 'reports';
     const [activeTab, setActiveTab] = useState<Tab>('employees');
 
     const [departments, setDepartments] = useState<Department[]>(mockDepartments);
@@ -60,15 +66,17 @@ const EmployeeManagement: React.FC = () => {
     const renderContent = () => {
         switch (activeTab) {
             case 'employees':
-                return <EmployeeList departments={departments} roles={roles} contracts={contracts} />;
+                return <EmployeeList employees={employees} setEmployees={setEmployees} departments={departments} roles={roles} contracts={contracts} />;
             case 'departments':
                 return <DepartmentList departments={departments} setDepartments={setDepartments} />;
             case 'roles':
                 return <RoleList roles={roles} setRoles={setRoles} departments={departments} />;
             case 'contracts':
                 return <ContractList contracts={contracts} setContracts={setContracts} />;
+            case 'reports':
+                return <EmployeeReports employees={employees} />;
             default:
-                return <EmployeeList departments={departments} roles={roles} contracts={contracts} />;
+                return <EmployeeList employees={employees} setEmployees={setEmployees} departments={departments} roles={roles} contracts={contracts} />;
         }
     };
 
@@ -82,6 +90,7 @@ const EmployeeManagement: React.FC = () => {
                         <TabButton tabName="departments" label="Departamentos" />
                         <TabButton tabName="roles" label="Cargos" />
                         <TabButton tabName="contracts" label="Contratos" />
+                        <TabButton tabName="reports" label="Relatórios" />
                     </nav>
                 </div>
                 <div className="p-6">

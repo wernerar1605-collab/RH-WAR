@@ -26,6 +26,7 @@ const CandidateList: React.FC<CandidateListProps> = ({ candidates, setCandidates
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
   const resumeInputRef = useRef<HTMLInputElement>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
+  const [filterStageId, setFilterStageId] = useState<number | 'all'>('all');
 
   const emptyCandidate = useMemo<Omit<Candidate, 'id'>>(() => ({
     name: '',
@@ -157,6 +158,11 @@ const CandidateList: React.FC<CandidateListProps> = ({ candidates, setCandidates
     if (stageName?.includes('contratado')) return 'bg-emerald-100 text-emerald-800';
     return 'bg-gray-100 text-gray-800';
   };
+
+  const filteredCandidates = candidates.filter(candidate => {
+    if (filterStageId === 'all') return true;
+    return candidate.stageId === filterStageId;
+  });
 
   const renderModalContent = () => {
     if (!selectedCandidate && modalMode !== 'create') return null;
@@ -328,6 +334,47 @@ const CandidateList: React.FC<CandidateListProps> = ({ candidates, setCandidates
             Adicionar Candidato
           </button>
         </div>
+
+        {/* Filter Badges */}
+        <div className="flex flex-wrap gap-2 mb-6 overflow-x-auto pb-2">
+            <button
+                onClick={() => setFilterStageId('all')}
+                className={`px-4 py-2 rounded-full text-sm font-medium flex items-center transition-colors ${
+                    filterStageId === 'all' 
+                    ? 'bg-indigo-600 text-white shadow-md' 
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+            >
+                Todas
+                <span className={`ml-2 py-0.5 px-2 rounded-full text-xs ${
+                    filterStageId === 'all' ? 'bg-indigo-800 text-indigo-100' : 'bg-gray-200 text-gray-500'
+                }`}>
+                    {candidates.length}
+                </span>
+            </button>
+            {stages.map(stage => {
+                const count = candidates.filter(c => c.stageId === stage.id).length;
+                return (
+                    <button
+                        key={stage.id}
+                        onClick={() => setFilterStageId(stage.id)}
+                         className={`px-4 py-2 rounded-full text-sm font-medium flex items-center transition-colors whitespace-nowrap ${
+                            filterStageId === stage.id 
+                            ? 'bg-indigo-600 text-white shadow-md' 
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        }`}
+                    >
+                        {stage.name}
+                        <span className={`ml-2 py-0.5 px-2 rounded-full text-xs ${
+                            filterStageId === stage.id ? 'bg-indigo-800 text-indigo-100' : 'bg-gray-200 text-gray-500'
+                        }`}>
+                            {count}
+                        </span>
+                    </button>
+                )
+            })}
+        </div>
+
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead className="bg-gray-50 border-b">
@@ -340,7 +387,7 @@ const CandidateList: React.FC<CandidateListProps> = ({ candidates, setCandidates
               </tr>
             </thead>
             <tbody>
-              {candidates.map((candidate) => (
+              {filteredCandidates.map((candidate) => (
                 <tr key={candidate.id} className="border-b hover:bg-gray-50">
                   <td className="p-4">
                     <div className="flex items-center">
@@ -372,6 +419,11 @@ const CandidateList: React.FC<CandidateListProps> = ({ candidates, setCandidates
               ))}
             </tbody>
           </table>
+          {filteredCandidates.length === 0 && (
+              <div className="text-center py-8 text-gray-500">
+                  Nenhum candidato encontrado nesta etapa.
+              </div>
+          )}
         </div>
       </div>
       

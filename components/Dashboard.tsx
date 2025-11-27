@@ -1,5 +1,12 @@
+
 import React from 'react';
-import { UsersIcon, DollarSignIcon, CalendarIcon, AwardIcon, TrendingUpIcon, ClockIcon, AlertTriangleIcon, FileTextIcon, ExternalLinkIcon } from './icons';
+import { UsersIcon, DollarSignIcon, CalendarIcon, TrendingUpIcon, ClockIcon, AlertTriangleIcon, FileTextIcon, ExternalLinkIcon, LogOutIcon } from './icons';
+
+interface DashboardProps {
+  totalEmployees: number;
+  inactiveCount: number;
+  onNavigate: (view: any) => void;
+}
 
 const StatCard: React.FC<{
   icon: React.ElementType;
@@ -8,8 +15,13 @@ const StatCard: React.FC<{
   subtitle: string;
   change?: string;
   isPositive?: boolean;
-}> = ({ icon: Icon, title, value, subtitle, change, isPositive }) => (
-  <div className="bg-white p-5 rounded-lg border border-gray-200 flex flex-col justify-between hover:shadow-md transition-shadow duration-300">
+  onClick?: () => void;
+  className?: string;
+}> = ({ icon: Icon, title, value, subtitle, change, isPositive, onClick, className }) => (
+  <div 
+    onClick={onClick}
+    className={`bg-white p-5 rounded-lg border border-gray-200 flex flex-col justify-between hover:shadow-md transition-all duration-300 ${className || ''}`}
+  >
     <div className="flex justify-between items-start">
       <p className="text-sm font-semibold text-gray-700">{title}</p>
       <Icon className="w-6 h-6 text-gray-400" />
@@ -29,7 +41,7 @@ const StatCard: React.FC<{
   </div>
 );
 
-const Dashboard: React.FC = () => {
+const Dashboard: React.FC<DashboardProps> = ({ totalEmployees, inactiveCount, onNavigate }) => {
   const departmentsData = [
     { name: 'Desenvolvimento', count: 42, total: 117 },
     { name: 'Vendas', count: 35, total: 117 },
@@ -45,10 +57,22 @@ const Dashboard: React.FC = () => {
         <StatCard
           icon={UsersIcon}
           title="Total de Funcionários"
-          value="147"
-          subtitle="Funcionários ativos"
+          value={totalEmployees.toString()}
+          subtitle="Funcionários no sistema"
           change="+5 este mês"
           isPositive={true}
+          onClick={() => onNavigate('employees')}
+          className="cursor-pointer ring-2 ring-transparent hover:ring-indigo-500"
+        />
+        <StatCard
+          icon={LogOutIcon}
+          title="Funcionários Inativos"
+          value={inactiveCount.toString()}
+          subtitle="Desligados ou afastados"
+          change="Acessar lista"
+          isPositive={false}
+          onClick={() => onNavigate('employees')}
+          className="cursor-pointer ring-2 ring-transparent hover:ring-indigo-500"
         />
         <StatCard
           icon={DollarSignIcon}
@@ -63,14 +87,8 @@ const Dashboard: React.FC = () => {
           title="Férias Pendentes"
           value="23"
           subtitle="Solicitações para aprovar"
-        />
-        <StatCard
-          icon={AwardIcon}
-          title="Taxa de Retenção"
-          value="94.2%"
-          subtitle="Últimos 12 meses"
-          change="+2.1% vs ano anterior"
-          isPositive={true}
+          onClick={() => onNavigate('leaves')}
+          className="cursor-pointer ring-2 ring-transparent hover:ring-indigo-500"
         />
       </div>
 
@@ -82,11 +100,17 @@ const Dashboard: React.FC = () => {
           </div>
           <p className="text-sm text-gray-500 mb-4">Acesso rápido às funcionalidades mais usadas</p>
           <div className="space-y-3">
-            <button className="w-full flex justify-between items-center text-left p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+            <button 
+              onClick={() => onNavigate('employees')}
+              className="w-full flex justify-between items-center text-left p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+            >
               <span className="font-medium text-gray-700">Cadastrar Funcionário</span>
               <UsersIcon className="w-5 h-5 text-gray-400" />
             </button>
-            <button className="w-full flex justify-between items-center text-left p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+            <button 
+              onClick={() => onNavigate('leaves')}
+              className="w-full flex justify-between items-center text-left p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+            >
               <span className="font-medium text-gray-700">Aprovar Solicitações</span>
               <ExternalLinkIcon className="w-5 h-5 text-gray-400" />
             </button>

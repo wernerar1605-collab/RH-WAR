@@ -1,6 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import { LeaveRequest, Employee, LeaveType } from '../types';
 import LeaveTimeline from './LeaveTimeline';
+import LeaveReports from './LeaveReports';
 import Modal from './Modal';
 import { EditIcon, TrashIcon, CheckCircleIcon, XCircleIcon, UndoIcon } from './icons';
 
@@ -61,6 +63,8 @@ const emptyFormData = {
 };
 
 const LeaveManagement: React.FC = () => {
+    type Tab = 'requests' | 'reports';
+    const [activeTab, setActiveTab] = useState<Tab>('requests');
     const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>(mockLeaveRequests);
     const [statusFilter, setStatusFilter] = useState<'all' | 'Pendente' | 'Aprovada' | 'Rejeitada'>('all');
 
@@ -158,88 +162,118 @@ const LeaveManagement: React.FC = () => {
         </button>
     );
 
+    const TabButton: React.FC<{ tabName: Tab, label: string }> = ({ tabName, label }) => (
+        <button
+            onClick={() => setActiveTab(tabName)}
+            className={`px-4 py-3 text-sm font-semibold transition-colors border-b-2 ${
+                activeTab === tabName
+                    ? 'border-indigo-600 text-indigo-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-800 hover:border-gray-300'
+            }`}
+        >
+            {label}
+        </button>
+    );
+
     return (
         <div className="space-y-6">
-             <div className="flex flex-col sm:flex-row justify-between sm:items-center">
-                <h1 className="text-3xl font-bold text-gray-900">Gestão de Licenças</h1>
-                <button 
-                    onClick={() => openModal('create')} 
-                    className="bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors"
-                >
-                    Nova Solicitação
-                </button>
-            </div>
-
-            <LeaveTimeline employees={mockEmployeesForLeave} requests={leaveRequests} />
-            
-             <div className="bg-white p-6 rounded-xl shadow-sm">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-                    <h2 className="text-2xl font-bold text-gray-800">Todas as Solicitações</h2>
-                    <div className="flex flex-wrap gap-2">
-                       <FilterButton status="all" label="Todas" count={leaveRequests.length} />
-                       <FilterButton status="Pendente" label="Pendentes" count={leaveRequests.filter(r => r.status === 'Pendente').length} />
-                       <FilterButton status="Aprovada" label="Aprovadas" count={leaveRequests.filter(r => r.status === 'Aprovada').length} />
-                       <FilterButton status="Rejeitada" label="Rejeitadas" count={leaveRequests.filter(r => r.status === 'Rejeitada').length} />
-                    </div>
+            <h1 className="text-3xl font-bold text-gray-900">Gestão de Licenças</h1>
+             <div className="bg-white rounded-xl shadow-sm">
+                 <div className="border-b border-gray-200">
+                    <nav className="flex flex-wrap -mb-px px-6">
+                        <TabButton tabName="requests" label="Solicitações" />
+                        <TabButton tabName="reports" label="Relatórios" />
+                    </nav>
                 </div>
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                        <thead className="bg-gray-50 border-b">
-                            <tr>
-                                <th className="p-4 text-sm font-semibold text-gray-600">Funcionário</th>
-                                <th className="p-4 text-sm font-semibold text-gray-600">Tipo</th>
-                                <th className="p-4 text-sm font-semibold text-gray-600">Período</th>
-                                <th className="p-4 text-sm font-semibold text-gray-600">Status</th>
-                                <th className="p-4 text-sm font-semibold text-gray-600">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredRequests.map((request) => (
-                                <tr key={request.id} className="border-b hover:bg-gray-50">
-                                    <td className="p-4">
-                                        <div className="flex items-center">
-                                            <img src={request.employee.avatar} alt={request.employee.name} className="h-10 w-10 rounded-full mr-4" />
-                                            <p className="font-semibold text-gray-900">{request.employee.name}</p>
-                                        </div>
-                                    </td>
-                                    <td className="p-4 text-gray-700">{request.type}</td>
-                                    <td className="p-4 text-gray-700">
-                                        {new Date(request.startDate + 'T00:00:00').toLocaleDateString('pt-BR')} - {new Date(request.endDate + 'T00:00:00').toLocaleDateString('pt-BR')}
-                                    </td>
-                                    <td className="p-4">
-                                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(request.status)}`}>
-                                            {request.status}
-                                        </span>
-                                    </td>
-                                    <td className="p-4">
-                                        <div className="flex items-center space-x-2">
-                                            {request.status === 'Pendente' && (
-                                                <>
-                                                    <button onClick={() => handleStatusChange(request.id, 'Aprovada')} className="p-2 text-emerald-500 hover:bg-emerald-100 rounded-full" title="Aprovar">
-                                                        <CheckCircleIcon className="w-5 h-5" />
-                                                    </button>
-                                                    <button onClick={() => handleStatusChange(request.id, 'Rejeitada')} className="p-2 text-rose-500 hover:bg-rose-100 rounded-full" title="Rejeitar">
-                                                        <XCircleIcon className="w-5 h-5" />
-                                                    </button>
-                                                </>
-                                            )}
-                                            {request.status !== 'Pendente' && (
-                                                <button onClick={() => handleStatusChange(request.id, 'Pendente')} className="p-2 text-gray-500 hover:bg-gray-200 rounded-full" title="Reverter para Pendente">
-                                                    <UndoIcon className="w-5 h-5" />
-                                                </button>
-                                            )}
-                                            <button onClick={() => openModal('edit', request)} className="p-2 text-gray-500 hover:bg-gray-200 rounded-full" title="Editar">
-                                                <EditIcon className="w-5 h-5" />
-                                            </button>
-                                            <button onClick={() => handleDelete(request.id)} className="p-2 text-gray-500 hover:bg-rose-100 hover:text-rose-600 rounded-full" title="Excluir">
-                                                <TrashIcon className="w-5 h-5" />
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+
+                <div className="p-6">
+                    {activeTab === 'requests' ? (
+                         <div className="space-y-6">
+                             <div className="flex justify-end">
+                                <button 
+                                    onClick={() => openModal('create')} 
+                                    className="bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors"
+                                >
+                                    Nova Solicitação
+                                </button>
+                            </div>
+
+                            <LeaveTimeline employees={mockEmployeesForLeave} requests={leaveRequests} />
+                            
+                             <div className="bg-white p-6 rounded-xl border border-gray-200">
+                                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                                    <h2 className="text-2xl font-bold text-gray-800">Todas as Solicitações</h2>
+                                    <div className="flex flex-wrap gap-2">
+                                       <FilterButton status="all" label="Todas" count={leaveRequests.length} />
+                                       <FilterButton status="Pendente" label="Pendentes" count={leaveRequests.filter(r => r.status === 'Pendente').length} />
+                                       <FilterButton status="Aprovada" label="Aprovadas" count={leaveRequests.filter(r => r.status === 'Aprovada').length} />
+                                       <FilterButton status="Rejeitada" label="Rejeitadas" count={leaveRequests.filter(r => r.status === 'Rejeitada').length} />
+                                    </div>
+                                </div>
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-left">
+                                        <thead className="bg-gray-50 border-b">
+                                            <tr>
+                                                <th className="p-4 text-sm font-semibold text-gray-600">Funcionário</th>
+                                                <th className="p-4 text-sm font-semibold text-gray-600">Tipo</th>
+                                                <th className="p-4 text-sm font-semibold text-gray-600">Período</th>
+                                                <th className="p-4 text-sm font-semibold text-gray-600">Status</th>
+                                                <th className="p-4 text-sm font-semibold text-gray-600">Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {filteredRequests.map((request) => (
+                                                <tr key={request.id} className="border-b hover:bg-gray-50">
+                                                    <td className="p-4">
+                                                        <div className="flex items-center">
+                                                            <img src={request.employee.avatar} alt={request.employee.name} className="h-10 w-10 rounded-full mr-4" />
+                                                            <p className="font-semibold text-gray-900">{request.employee.name}</p>
+                                                        </div>
+                                                    </td>
+                                                    <td className="p-4 text-gray-700">{request.type}</td>
+                                                    <td className="p-4 text-gray-700">
+                                                        {new Date(request.startDate + 'T00:00:00').toLocaleDateString('pt-BR')} - {new Date(request.endDate + 'T00:00:00').toLocaleDateString('pt-BR')}
+                                                    </td>
+                                                    <td className="p-4">
+                                                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(request.status)}`}>
+                                                            {request.status}
+                                                        </span>
+                                                    </td>
+                                                    <td className="p-4">
+                                                        <div className="flex items-center space-x-2">
+                                                            {request.status === 'Pendente' && (
+                                                                <>
+                                                                    <button onClick={() => handleStatusChange(request.id, 'Aprovada')} className="p-2 text-emerald-500 hover:bg-emerald-100 rounded-full" title="Aprovar">
+                                                                        <CheckCircleIcon className="w-5 h-5" />
+                                                                    </button>
+                                                                    <button onClick={() => handleStatusChange(request.id, 'Rejeitada')} className="p-2 text-rose-500 hover:bg-rose-100 rounded-full" title="Rejeitar">
+                                                                        <XCircleIcon className="w-5 h-5" />
+                                                                    </button>
+                                                                </>
+                                                            )}
+                                                            {request.status !== 'Pendente' && (
+                                                                <button onClick={() => handleStatusChange(request.id, 'Pendente')} className="p-2 text-gray-500 hover:bg-gray-200 rounded-full" title="Reverter para Pendente">
+                                                                    <UndoIcon className="w-5 h-5" />
+                                                                </button>
+                                                            )}
+                                                            <button onClick={() => openModal('edit', request)} className="p-2 text-gray-500 hover:bg-gray-200 rounded-full" title="Editar">
+                                                                <EditIcon className="w-5 h-5" />
+                                                            </button>
+                                                            <button onClick={() => handleDelete(request.id)} className="p-2 text-gray-500 hover:bg-rose-100 hover:text-rose-600 rounded-full" title="Excluir">
+                                                                <TrashIcon className="w-5 h-5" />
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        <LeaveReports requests={leaveRequests} employees={mockEmployeesForLeave} />
+                    )}
                 </div>
             </div>
 

@@ -1,15 +1,8 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Employee, Department, Role, Contract } from '../types';
 import Modal from './Modal';
 import { EditIcon, TrashIcon, ProfileIcon } from './icons';
-
-const mockEmployees: Employee[] = [
-  { id: 1, name: 'Ana Silva', role: 'Desenvolvedora Frontend', department: 'Tecnologia', email: 'ana.silva@example.com', avatar: 'https://picsum.photos/seed/1/200', status: 'Ativo', dataDeAdmissao: '2022-03-15', cpf: '111.111.111-11', rg: '11.111.111-1', dataDeNascimento: '1990-05-10', telefone: '(11) 98888-7777', salario: '8000,00', regimeDeTrabalho: 'CLT' },
-  { id: 2, name: 'Bruno Costa', role: 'Designer UX/UI', department: 'Produto', email: 'bruno.costa@example.com', avatar: 'https://picsum.photos/seed/2/200', status: 'Ativo', dataDeAdmissao: '2021-11-20', cpf: '222.222.222-22', rg: '22.222.222-2', dataDeNascimento: '1992-08-25', telefone: '(11) 97777-6666', salario: '7500,00', regimeDeTrabalho: 'CLT' },
-  { id: 3, name: 'Carla Dias', role: 'Gerente de Projetos', department: 'Tecnologia', email: 'carla.dias@example.com', avatar: 'https://picsum.photos/seed/3/200', status: 'Ativo', dataDeAdmissao: '2020-01-10', cpf: '333.333.333-33', rg: '33.333.333-3', dataDeNascimento: '1988-02-14', telefone: '(11) 96666-5555', salario: '12000,00', regimeDeTrabalho: 'PJ' },
-  { id: 4, name: 'Diego Faria', role: 'Engenheiro de Dados', department: 'Dados', email: 'diego.faria@example.com', avatar: 'https://picsum.photos/seed/4/200', status: 'Inativo', dataDeAdmissao: '2023-05-01', cpf: '444.444.444-44', rg: '44.444.444-4', dataDeNascimento: '1995-12-01', telefone: '(11) 95555-4444', salario: '9500,00', regimeDeTrabalho: 'CLT' },
-  { id: 5, name: 'Elisa Rocha', role: 'Analista de RH', department: 'RH', email: 'elisa.rocha@example.com', avatar: 'https://picsum.photos/seed/5/200', status: 'Ativo', dataDeAdmissao: '2022-09-05', cpf: '555.555.555-55', rg: '55.555.555-5', dataDeNascimento: '1993-07-30', telefone: '(11) 94444-3333', salario: '6000,00', regimeDeTrabalho: 'CLT' },
-];
 
 const toBase64 = (file: File): Promise<string> => new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -34,14 +27,16 @@ const emptyEmployee: Omit<Employee, 'id' | 'status'> = {
 };
 
 interface EmployeeListProps {
+    employees: Employee[];
+    setEmployees: React.Dispatch<React.SetStateAction<Employee[]>>;
     departments: Department[];
     roles: Role[];
     contracts: Contract[];
 }
 
-const EmployeeList: React.FC<EmployeeListProps> = ({ departments, roles, contracts }) => {
-  const [employees, setEmployees] = useState<Employee[]>(mockEmployees);
+const EmployeeList: React.FC<EmployeeListProps> = ({ employees, setEmployees, departments, roles, contracts }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState<'all' | 'Ativo' | 'Inativo'>('all');
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
@@ -115,11 +110,19 @@ const EmployeeList: React.FC<EmployeeListProps> = ({ departments, roles, contrac
     }
   };
 
-  const filteredEmployees = employees.filter(emp =>
-    emp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  const filteredEmployees = employees.filter(emp => {
+    const matchesSearch = emp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     emp.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    emp.department.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+    emp.department.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesStatus = filterStatus === 'all' || emp.status === filterStatus;
+
+    return matchesSearch && matchesStatus;
+  });
+
+  const countAll = employees.length;
+  const countActive = employees.filter(e => e.status === 'Ativo').length;
+  const countInactive = employees.filter(e => e.status === 'Inativo').length;
 
   const selectedDepartmentObj = departments.find(d => d.name === formData.department);
   const filteredRoles = selectedDepartmentObj 
@@ -146,6 +149,56 @@ const EmployeeList: React.FC<EmployeeListProps> = ({ departments, roles, contrac
                 </button>
             </div>
         </div>
+
+        {/* Status Filter Badges */}
+        <div className="flex flex-wrap gap-2 mb-6">
+            <button
+                onClick={() => setFilterStatus('all')}
+                className={`px-4 py-2 rounded-full text-sm font-medium flex items-center transition-colors ${
+                    filterStatus === 'all' 
+                    ? 'bg-indigo-600 text-white shadow-md' 
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+            >
+                Todos
+                <span className={`ml-2 py-0.5 px-2 rounded-full text-xs ${
+                    filterStatus === 'all' ? 'bg-indigo-800 text-indigo-100' : 'bg-gray-200 text-gray-500'
+                }`}>
+                    {countAll}
+                </span>
+            </button>
+            <button
+                onClick={() => setFilterStatus('Ativo')}
+                className={`px-4 py-2 rounded-full text-sm font-medium flex items-center transition-colors ${
+                    filterStatus === 'Ativo' 
+                    ? 'bg-emerald-600 text-white shadow-md' 
+                    : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                }`}
+            >
+                Ativos
+                <span className={`ml-2 py-0.5 px-2 rounded-full text-xs ${
+                    filterStatus === 'Ativo' ? 'bg-emerald-800 text-emerald-100' : 'bg-emerald-100 text-emerald-600'
+                }`}>
+                    {countActive}
+                </span>
+            </button>
+            <button
+                onClick={() => setFilterStatus('Inativo')}
+                className={`px-4 py-2 rounded-full text-sm font-medium flex items-center transition-colors ${
+                    filterStatus === 'Inativo' 
+                    ? 'bg-rose-600 text-white shadow-md' 
+                    : 'bg-rose-50 text-rose-700 hover:bg-rose-100'
+                }`}
+            >
+                Inativos
+                <span className={`ml-2 py-0.5 px-2 rounded-full text-xs ${
+                    filterStatus === 'Inativo' ? 'bg-rose-800 text-rose-100' : 'bg-rose-100 text-rose-600'
+                }`}>
+                    {countInactive}
+                </span>
+            </button>
+        </div>
+
         <div className="overflow-x-auto">
             <table className="w-full text-left min-w-[900px]">
             <thead className="bg-gray-50 border-b">

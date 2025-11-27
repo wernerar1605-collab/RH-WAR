@@ -54,14 +54,23 @@ export interface SystemUser {
   login: string;
   password?: string; // Senha pode ser opcional ao exibir
   avatar: string;
-  role: 'Administrador' | 'Usuário';
+  role: 'Administrador' | 'Gestora' | 'Coordenadora' | 'Usuário';
+}
+
+export interface AccessLevel {
+  id: number;
+  name: string;
+  description: string;
+  permissions: string[];
 }
 
 export interface Department {
   id: number;
   name: string;
+  departmentId?: number; // Optional for backward compatibility if needed, though strictly Role has departmentId
 }
 
+// Fixed definition to match usage in components
 export interface Role {
   id: number;
   name: string;
