@@ -95,7 +95,7 @@ const Reports: React.FC<ReportsProps> = ({
         const deptDistribution = Object.entries(deptCounts)
             .map(([label, value]) => ({ 
                 label, 
-                value: totalEmployees > 0 ? Math.round((value / totalEmployees) * 100) : 0,
+                value: totalEmployees > 0 ? Math.round(((value as number) / totalEmployees) * 100) : 0,
                 count: value
             }))
             .sort((a, b) => b.value - a.value);

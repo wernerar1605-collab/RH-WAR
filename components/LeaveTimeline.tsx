@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Employee, LeaveRequest, LeaveType } from '../types';
 import { ChevronLeftIcon } from './icons';
@@ -60,7 +61,7 @@ const LeaveTimeline: React.FC<LeaveTimelineProps> = ({ employees, requests }) =>
   const today = new Date();
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col" style={{ height: 'calc(100vh - 200px)', minHeight: '400px' }}>
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col h-[70vh] min-h-[500px]">
        {/* Top Header: Search and Month Navigation */}
        <div className="p-2 border-b flex items-center flex-shrink-0">
           <div className="w-[140px] sm:w-[250px] flex-shrink-0 pr-2 transition-all duration-300">
@@ -84,7 +85,7 @@ const LeaveTimeline: React.FC<LeaveTimelineProps> = ({ employees, requests }) =>
       </div>
 
       <div className="overflow-auto flex-grow">
-        <div className="relative">
+        <div className="relative min-w-full">
           {/* Timeline Header: Column title and Days */}
           <div className="sticky top-0 z-20 grid grid-cols-[140px,1fr] sm:grid-cols-[250px,1fr] bg-white">
             <div className="p-2 h-12 border-b border-r sticky left-0 bg-white flex items-center z-30 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
