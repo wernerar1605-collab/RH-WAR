@@ -8,41 +8,28 @@ import RecruitmentReports from './RecruitmentReports';
 import { Candidate, Job, Stage } from '../types';
 import { LayoutIcon, ListIcon } from './icons';
 
-const mockJobs: Job[] = [
-    { id: 1, title: 'Desenvolvedor Backend', department: 'Tecnologia', status: 'Aberto', description: 'Vaga para desenvolvedor backend com experiência em Node.js.' },
-    { id: 2, title: 'Product Manager', department: 'Produto', status: 'Aberto', description: 'Vaga para gerente de produto para nosso novo app.' },
-    { id: 3, title: 'Designer UX/UI', department: 'Produto', status: 'Fechado', description: 'Vaga para designer de interfaces.' },
-];
+interface RecruitmentManagementProps {
+    jobs: Job[];
+    setJobs: React.Dispatch<React.SetStateAction<Job[]>>;
+    stages: Stage[];
+    setStages: React.Dispatch<React.SetStateAction<Stage[]>>;
+    candidates: Candidate[];
+    setCandidates: React.Dispatch<React.SetStateAction<Candidate[]>>;
+}
 
-const mockStages: Stage[] = [
-    { id: 1, name: 'Triagem' },
-    { id: 2, name: 'Entrevista com RH' },
-    { id: 3, name: 'Teste Técnico' },
-    { id: 4, name: 'Entrevista Técnica' },
-    { id: 5, name: 'Oferta' },
-    { id: 6, name: 'Contratado' },
-];
-
-const mockCandidates: Candidate[] = [
-  { id: 1, name: 'Fernando Lima', jobIds: [1], stageId: 4, avatar: 'https://picsum.photos/seed/6/200' },
-  { id: 2, name: 'Gabriela Mendes', jobIds: [1], stageId: 1, avatar: 'https://picsum.photos/seed/7/200' },
-  { id: 3, name: 'Heloísa Pinto', jobIds: [2], stageId: 5, avatar: 'https://picsum.photos/seed/8/200' },
-  { id: 4, name: 'Ivan Gomes', jobIds: [1], stageId: 2, avatar: 'https://picsum.photos/seed/9/200' },
-  { id: 5, name: 'Juliana Alves', jobIds: [2], stageId: 2, avatar: 'https://picsum.photos/seed/10/200' },
-  { id: 6, name: 'Kleber Souza', jobIds: [1, 2], stageId: 1, avatar: 'https://picsum.photos/seed/11/200' },
-  { id: 7, name: 'Lívia Andrade', jobIds: [2, 3], stageId: 3, avatar: 'https://picsum.photos/seed/12/200' },
-];
-
-const RecruitmentManagement: React.FC = () => {
+const RecruitmentManagement: React.FC<RecruitmentManagementProps> = ({ 
+    jobs, 
+    setJobs, 
+    stages, 
+    setStages, 
+    candidates, 
+    setCandidates 
+}) => {
     type Tab = 'candidates' | 'jobs' | 'stages' | 'reports';
     type ViewMode = 'board' | 'list';
     
     const [activeTab, setActiveTab] = useState<Tab>('candidates');
     const [viewMode, setViewMode] = useState<ViewMode>('board');
-
-    const [jobs, setJobs] = useState<Job[]>(mockJobs);
-    const [stages, setStages] = useState<Stage[]>(mockStages);
-    const [candidates, setCandidates] = useState<Candidate[]>(mockCandidates);
 
     const TabButton: React.FC<{ tabName: Tab, label: string }> = ({ tabName, label }) => (
         <button

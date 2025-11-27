@@ -1,38 +1,120 @@
 
 import React, { useState, useMemo } from 'react';
-import { FileTextIcon, TrendingUpIcon, UsersIcon, DollarSignIcon, ClockIcon } from './icons';
+import { FileTextIcon, TrendingUpIcon, UsersIcon, DollarSignIcon, ClockIcon, BriefcaseIcon, AlertTriangleIcon } from './icons';
+import { Employee, Candidate, Job, Stage, LeaveRequest } from '../types';
+import EmployeeReports from './EmployeeReports';
+import RecruitmentReports from './RecruitmentReports';
+import LeaveReports from './LeaveReports';
+
+interface ReportsProps {
+    employees?: Employee[];
+    candidates?: Candidate[];
+    jobs?: Job[];
+    stages?: Stage[];
+    leaveRequests?: LeaveRequest[];
+}
 
 const MetricCard: React.FC<{
     title: string;
     value: string;
-    trend: string;
-    trendUp: boolean;
+    subValue?: string;
+    trend?: string;
+    trendUp?: boolean;
     icon: React.ElementType;
-}> = ({ title, value, trend, trendUp, icon: Icon }) => (
+    colorClass?: string;
+}> = ({ title, value, subValue, trend, trendUp, icon: Icon, colorClass = "bg-indigo-50 text-indigo-600" }) => (
     <div className="bg-white p-5 rounded-lg border border-gray-200 shadow-sm">
         <div className="flex justify-between items-start mb-4">
             <div>
                 <p className="text-sm font-medium text-gray-500">{title}</p>
                 <h3 className="text-2xl font-bold text-gray-900 mt-1">{value}</h3>
             </div>
-            <div className={`p-2 rounded-lg ${trendUp ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+            <div className={`p-2 rounded-lg ${colorClass}`}>
                 <Icon className="w-5 h-5" />
             </div>
         </div>
         <div className="flex items-center text-sm">
-            <TrendingUpIcon className={`w-4 h-4 mr-1 ${trendUp ? 'text-emerald-500' : 'text-rose-500'}`} />
-            <span className={`font-medium ${trendUp ? 'text-emerald-500' : 'text-rose-500'}`}>
-                {trend}
-            </span>
-            <span className="text-gray-500 ml-1">vs mês anterior</span>
+            {trend && (
+                <>
+                    <TrendingUpIcon className={`w-4 h-4 mr-1 ${trendUp ? 'text-emerald-500' : 'text-rose-500'}`} />
+                    <span className={`font-medium ${trendUp ? 'text-emerald-500' : 'text-rose-500'}`}>
+                        {trend}
+                    </span>
+                </>
+            )}
+            {subValue && <span className="text-gray-500 ml-1">{subValue}</span>}
         </div>
     </div>
 );
 
-const Reports: React.FC = () => {
+const Reports: React.FC<ReportsProps> = ({ 
+    employees = [], 
+    candidates = [], 
+    jobs = [], 
+    stages = [], 
+    leaveRequests = [] 
+}) => {
+    type Tab = 'overview' | 'employees' | 'recruitment' | 'leaves';
+    const [activeTab, setActiveTab] = useState<Tab>('overview');
+
     const [searchTerm, setSearchTerm] = useState('');
     const [filterType, setFilterType] = useState('Todos');
     const [filterStatus, setFilterStatus] = useState('Todos');
+
+    // --- Real Data Calculations ---
+
+    const overviewStats = useMemo(() => {
+        // Employee Stats
+        const totalEmployees = employees.length;
+        const activeEmployees = employees.filter(e => e.status === 'Ativo').length;
+        const inactiveEmployees = employees.filter(e => e.status === 'Inativo').length;
+        const turnoverRate = totalEmployees > 0 ? ((inactiveEmployees / totalEmployees) * 100).toFixed(1) : "0.0";
+
+        // Salary Stats
+        const parseSalary = (salaryStr: string) => {
+             return parseFloat(salaryStr.replace(/\./g, '').replace(',', '.')) || 0;
+        };
+        const totalPayroll = employees
+            .filter(e => e.status === 'Ativo')
+            .reduce((acc, curr) => acc + parseSalary(curr.salario), 0);
+        
+        // Recruitment Stats
+        const openJobs = jobs.filter(j => j.status === 'Aberto').length;
+        
+        // Leave Stats
+        const pendingLeaves = leaveRequests.filter(r => r.status === 'Pendente').length;
+
+        // Department Distribution
+        const deptCounts = employees.reduce((acc, curr) => {
+            const dept = curr.department;
+            const currentCount = acc[dept] || 0;
+            acc[dept] = currentCount + 1;
+            return acc;
+        }, {} as Record<string, number>);
+
+        const deptDistribution = Object.entries(deptCounts)
+            .map(([label, value]) => ({ 
+                label, 
+                value: totalEmployees > 0 ? Math.round((value / totalEmployees) * 100) : 0,
+                count: value
+            }))
+            .sort((a, b) => b.value - a.value);
+
+        return {
+            turnoverRate,
+            inactiveEmployees,
+            totalPayroll,
+            openJobs,
+            pendingLeaves,
+            deptDistribution
+        };
+    }, [employees, jobs, leaveRequests]);
+
+    const formatCurrency = (value: number) => {
+        return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+    };
+
+    // --- End Real Data Calculations ---
 
     const reportList = [
         { id: 1, name: 'Folha de Pagamento - Maio 2024', type: 'Financeiro', date: '01/05/2024', status: 'Gerado' },
@@ -42,14 +124,6 @@ const Reports: React.FC = () => {
         { id: 5, name: 'Turnover Departamental', type: 'RH', date: '30/03/2024', status: 'Gerado' },
         { id: 6, name: 'Custos Operacionais - RH', type: 'Financeiro', date: '28/03/2024', status: 'Gerado' },
         { id: 7, name: 'Pesquisa de Clima Organizacional', type: 'RH', date: '15/03/2024', status: 'Pendente' },
-    ];
-
-    const distributionData = [
-        { label: 'Tecnologia', value: 35, color: 'bg-indigo-500' },
-        { label: 'Produto', value: 25, color: 'bg-emerald-500' },
-        { label: 'Vendas', value: 20, color: 'bg-amber-500' },
-        { label: 'RH', value: 10, color: 'bg-rose-500' },
-        { label: 'Outros', value: 10, color: 'bg-gray-400' },
     ];
 
     const reportTypes = ['Todos', 'Financeiro', 'RH', 'Performance', 'Recrutamento'];
@@ -64,10 +138,23 @@ const Reports: React.FC = () => {
         });
     }, [searchTerm, filterType, filterStatus]);
 
-    return (
-        <div className="space-y-6">
+    const TabButton: React.FC<{ tabName: Tab, label: string }> = ({ tabName, label }) => (
+        <button
+            onClick={() => setActiveTab(tabName)}
+            className={`px-4 py-3 text-sm font-semibold transition-colors border-b-2 ${
+                activeTab === tabName
+                    ? 'border-indigo-600 text-indigo-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-800 hover:border-gray-300'
+            }`}
+        >
+            {label}
+        </button>
+    );
+
+    const renderOverview = () => (
+        <div className="space-y-6 animate-fade-in-up">
             <div className="flex justify-between items-center">
-                <h1 className="text-3xl font-bold text-gray-900">Central de Relatórios</h1>
+                <h2 className="text-xl font-semibold text-gray-800">Painel Geral</h2>
                 <button className="bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors flex items-center">
                     <FileTextIcon className="w-5 h-5 mr-2" />
                     Gerar Novo Relatório
@@ -100,7 +187,7 @@ const Reports: React.FC = () => {
                         <select 
                             value={filterType}
                             onChange={(e) => setFilterType(e.target.value)}
-                            className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                            className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md bg-white"
                         >
                             {reportTypes.map(type => (
                                 <option key={type} value={type}>{type}</option>
@@ -112,7 +199,7 @@ const Reports: React.FC = () => {
                         <select 
                             value={filterStatus}
                             onChange={(e) => setFilterStatus(e.target.value)}
-                            className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                            className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md bg-white"
                         >
                             {reportStatuses.map(status => (
                                 <option key={status} value={status}>{status}</option>
@@ -122,57 +209,64 @@ const Reports: React.FC = () => {
                 </div>
             </div>
 
-            {/* Metrics Overview */}
+            {/* Metrics Overview (REAL DATA) */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <MetricCard 
-                    title="Turnover Mensal" 
-                    value="2.4%" 
-                    trend="-0.5%" 
-                    trendUp={true} 
+                    title="Taxa de Rotatividade" 
+                    value={`${overviewStats.turnoverRate}%`}
+                    subValue={`${overviewStats.inactiveEmployees} inativos`}
                     icon={UsersIcon} 
+                    colorClass="bg-rose-50 text-rose-600"
                 />
                 <MetricCard 
-                    title="Custo por Contratação" 
-                    value="R$ 1.250" 
-                    trend="+12%" 
-                    trendUp={false} 
+                    title="Folha de Pagamento Est." 
+                    value={formatCurrency(overviewStats.totalPayroll)}
+                    subValue="Mensal (Ativos)"
                     icon={DollarSignIcon} 
+                    colorClass="bg-emerald-50 text-emerald-600"
                 />
                 <MetricCard 
-                    title="Tempo Médio de Contratação" 
-                    value="18 dias" 
-                    trend="-2 dias" 
-                    trendUp={true} 
-                    icon={ClockIcon} 
+                    title="Vagas em Aberto" 
+                    value={overviewStats.openJobs.toString()}
+                    subValue="Recrutamento"
+                    icon={BriefcaseIcon} 
+                    colorClass="bg-indigo-50 text-indigo-600"
                 />
                 <MetricCard 
-                    title="Satisfação Interna (eNPS)" 
-                    value="78" 
-                    trend="+4 pts" 
-                    trendUp={true} 
-                    icon={TrendingUpIcon} 
+                    title="Licenças Pendentes" 
+                    value={overviewStats.pendingLeaves.toString()}
+                    subValue="Aguardando aprovação"
+                    icon={AlertTriangleIcon} 
+                    colorClass="bg-amber-50 text-amber-600"
                 />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Distribution Chart Simulation */}
+                {/* Distribution Chart (REAL DATA) */}
                 <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 lg:col-span-1">
                     <h3 className="text-lg font-bold text-gray-800 mb-6">Distribuição por Departamento</h3>
                     <div className="space-y-4">
-                        {distributionData.map((item) => (
-                            <div key={item.label}>
-                                <div className="flex justify-between text-sm mb-1">
-                                    <span className="text-gray-600 font-medium">{item.label}</span>
-                                    <span className="text-gray-900 font-bold">{item.value}%</span>
+                        {overviewStats.deptDistribution.map((item, index) => {
+                            // Cycle through some colors
+                            const colors = ['bg-indigo-500', 'bg-emerald-500', 'bg-amber-500', 'bg-rose-500', 'bg-sky-500', 'bg-violet-500'];
+                            const color = colors[index % colors.length];
+                            
+                            return (
+                                <div key={item.label}>
+                                    <div className="flex justify-between text-sm mb-1">
+                                        <span className="text-gray-600 font-medium">{item.label}</span>
+                                        <span className="text-gray-900 font-bold">{item.value}% <span className="text-xs text-gray-400 font-normal">({item.count})</span></span>
+                                    </div>
+                                    <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                                        <div 
+                                            className={`h-2.5 rounded-full ${color}`} 
+                                            style={{ width: `${item.value}%` }}
+                                        ></div>
+                                    </div>
                                 </div>
-                                <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
-                                    <div 
-                                        className={`h-2.5 rounded-full ${item.color}`} 
-                                        style={{ width: `${item.value}%` }}
-                                    ></div>
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        })}
+                        {overviewStats.deptDistribution.length === 0 && <p className="text-gray-500 text-sm">Nenhum funcionário cadastrado.</p>}
                     </div>
                 </div>
 
@@ -180,7 +274,7 @@ const Reports: React.FC = () => {
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 lg:col-span-2 flex flex-col">
                     <div className="p-6 border-b border-gray-200 flex justify-between items-center">
                         <h3 className="text-lg font-bold text-gray-800">
-                            Resultados ({filteredReports.length})
+                            Histórico de Relatórios ({filteredReports.length})
                         </h3>
                     </div>
                     <div className="overflow-x-auto flex-1">
@@ -228,6 +322,29 @@ const Reports: React.FC = () => {
                             </tbody>
                         </table>
                     </div>
+                </div>
+            </div>
+        </div>
+    );
+
+    return (
+        <div className="space-y-6">
+            <h1 className="text-3xl font-bold text-gray-900">Central de Relatórios</h1>
+            
+            <div className="bg-white rounded-xl shadow-sm">
+                <div className="border-b border-gray-200">
+                    <nav className="flex flex-wrap -mb-px px-6">
+                        <TabButton tabName="overview" label="Visão Geral" />
+                        <TabButton tabName="employees" label="Pessoal" />
+                        <TabButton tabName="recruitment" label="Recrutamento" />
+                        <TabButton tabName="leaves" label="Licenças" />
+                    </nav>
+                </div>
+                <div className="p-6">
+                    {activeTab === 'overview' && renderOverview()}
+                    {activeTab === 'employees' && <EmployeeReports employees={employees} />}
+                    {activeTab === 'recruitment' && <RecruitmentReports candidates={candidates} jobs={jobs} stages={stages} />}
+                    {activeTab === 'leaves' && <LeaveReports requests={leaveRequests} employees={employees} />}
                 </div>
             </div>
         </div>
