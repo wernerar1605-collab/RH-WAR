@@ -11,7 +11,7 @@ const toBase64 = (file: File): Promise<string> => new Promise((resolve, reject) 
     reader.onerror = error => reject(error);
 });
 
-const emptyEmployee: Omit<Employee, 'id' | 'status'> = {
+const emptyEmployee: Omit<Employee, 'id'> = {
     name: '',
     cpf: '',
     rg: '',
@@ -24,6 +24,7 @@ const emptyEmployee: Omit<Employee, 'id' | 'status'> = {
     salario: '',
     regimeDeTrabalho: '',
     avatar: '',
+    status: 'Ativo',
 };
 
 interface EmployeeListProps {
@@ -46,7 +47,7 @@ const EmployeeList: React.FC<EmployeeListProps> = ({ employees, setEmployees, de
 
   useEffect(() => {
     if (modalMode === 'edit' && selectedEmployee) {
-        const { id, status, ...employeeData } = selectedEmployee;
+        const { id, ...employeeData } = selectedEmployee;
         setFormData(employeeData);
     } else {
         setFormData(emptyEmployee);
@@ -91,8 +92,8 @@ const EmployeeList: React.FC<EmployeeListProps> = ({ employees, setEmployees, de
     if (modalMode === 'create') {
         const newEmployee: Employee = {
             id: Math.max(...employees.map(e => e.id), 0) + 1,
-            status: 'Ativo',
             ...formData,
+            status: formData.status as 'Ativo' | 'Inativo',
             avatar: formData.avatar || `https://picsum.photos/seed/${Math.random()}/200`,
         };
         setEmployees([newEmployee, ...employees]);
@@ -336,13 +337,20 @@ const EmployeeList: React.FC<EmployeeListProps> = ({ employees, setEmployees, de
                             <label htmlFor="salario" className="block text-sm font-medium text-gray-700">Salário *</label>
                             <input type="text" name="salario" id="salario" value={formData.salario} onChange={handleInputChange} required placeholder="0,00" className="mt-1 block w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
                         </div>
-                        <div className="md:col-span-2">
+                        <div>
                             <label htmlFor="regimeDeTrabalho" className="block text-sm font-medium text-gray-700">Regime de Trabalho</label>
                             <select name="regimeDeTrabalho" id="regimeDeTrabalho" value={formData.regimeDeTrabalho} onChange={handleInputChange} className="mt-1 block w-full bg-white pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
                                 <option value="">Selecione o regime</option>
                                 {contracts.map(contract => (
                                     <option key={contract.id} value={contract.name}>{contract.name}</option>
                                 ))}
+                            </select>
+                        </div>
+                         <div>
+                            <label htmlFor="status" className="block text-sm font-medium text-gray-700">Status *</label>
+                            <select name="status" id="status" value={formData.status} onChange={handleInputChange} required className="mt-1 block w-full bg-white pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                                <option value="Ativo">Ativo</option>
+                                <option value="Inativo">Inativo</option>
                             </select>
                         </div>
                     </div>

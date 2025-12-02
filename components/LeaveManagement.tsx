@@ -143,8 +143,19 @@ const LeaveManagement: React.FC<LeaveManagementProps> = ({ employees, leaveReque
 
     return (
         <div className="space-y-6">
-            <h1 className="text-3xl font-bold text-gray-900">Gestão de Licenças</h1>
-             <div className="bg-white rounded-xl shadow-sm">
+            <div className="flex justify-between items-center">
+                <h1 className="text-3xl font-bold text-gray-900">Gestão de Licenças</h1>
+                 {activeTab === 'requests' && (
+                    <button 
+                        onClick={() => openModal('create')} 
+                        className="bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors shadow-sm"
+                    >
+                        Nova Solicitação
+                    </button>
+                )}
+            </div>
+
+             <div className="bg-white rounded-xl shadow-sm overflow-hidden">
                  <div className="border-b border-gray-200">
                     <nav className="flex flex-wrap -mb-px px-6">
                         <TabButton tabName="requests" label="Solicitações" />
@@ -154,21 +165,12 @@ const LeaveManagement: React.FC<LeaveManagementProps> = ({ employees, leaveReque
 
                 <div className="p-6">
                     {activeTab === 'requests' ? (
-                         <div className="space-y-6">
-                             <div className="flex justify-end">
-                                <button 
-                                    onClick={() => openModal('create')} 
-                                    className="bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors"
-                                >
-                                    Nova Solicitação
-                                </button>
-                            </div>
-
+                         <div className="space-y-8">
                             <LeaveTimeline employees={employees} requests={leaveRequests} />
                             
-                             <div className="bg-white p-6 rounded-xl border border-gray-200">
+                             <div className="bg-white pt-6 border-t border-gray-100">
                                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-                                    <h2 className="text-2xl font-bold text-gray-800">Todas as Solicitações</h2>
+                                    <h2 className="text-xl font-bold text-gray-800">Histórico de Solicitações</h2>
                                     <div className="flex flex-wrap gap-2">
                                        <FilterButton status="all" label="Todas" count={leaveRequests.length} />
                                        <FilterButton status="Pendente" label="Pendentes" count={leaveRequests.filter(r => r.status === 'Pendente').length} />
@@ -176,7 +178,7 @@ const LeaveManagement: React.FC<LeaveManagementProps> = ({ employees, leaveReque
                                        <FilterButton status="Rejeitada" label="Rejeitadas" count={leaveRequests.filter(r => r.status === 'Rejeitada').length} />
                                     </div>
                                 </div>
-                                <div className="overflow-x-auto">
+                                <div className="overflow-x-auto rounded-lg border border-gray-200">
                                     <table className="w-full text-left">
                                         <thead className="bg-gray-50 border-b">
                                             <tr>
@@ -189,15 +191,15 @@ const LeaveManagement: React.FC<LeaveManagementProps> = ({ employees, leaveReque
                                         </thead>
                                         <tbody>
                                             {filteredRequests.map((request) => (
-                                                <tr key={request.id} className="border-b hover:bg-gray-50">
+                                                <tr key={request.id} className="border-b hover:bg-gray-50 last:border-0">
                                                     <td className="p-4">
                                                         <div className="flex items-center">
-                                                            <img src={request.employee.avatar} alt={request.employee.name} className="h-10 w-10 rounded-full mr-4 object-cover" />
-                                                            <p className="font-semibold text-gray-900">{request.employee.name}</p>
+                                                            <img src={request.employee.avatar} alt={request.employee.name} className="h-9 w-9 rounded-full mr-3 object-cover" />
+                                                            <p className="font-medium text-gray-900 text-sm">{request.employee.name}</p>
                                                         </div>
                                                     </td>
-                                                    <td className="p-4 text-gray-700">{request.type}</td>
-                                                    <td className="p-4 text-gray-700">
+                                                    <td className="p-4 text-gray-700 text-sm">{request.type}</td>
+                                                    <td className="p-4 text-gray-700 text-sm">
                                                         {new Date(request.startDate + 'T00:00:00').toLocaleDateString('pt-BR')} - {new Date(request.endDate + 'T00:00:00').toLocaleDateString('pt-BR')}
                                                     </td>
                                                     <td className="p-4">
@@ -209,29 +211,36 @@ const LeaveManagement: React.FC<LeaveManagementProps> = ({ employees, leaveReque
                                                         <div className="flex items-center space-x-2">
                                                             {request.status === 'Pendente' && (
                                                                 <>
-                                                                    <button onClick={() => handleStatusChange(request.id, 'Aprovada')} className="p-2 text-emerald-500 hover:bg-emerald-100 rounded-full" title="Aprovar">
+                                                                    <button onClick={() => handleStatusChange(request.id, 'Aprovada')} className="p-1.5 text-emerald-500 hover:bg-emerald-100 rounded-full transition-colors" title="Aprovar">
                                                                         <CheckCircleIcon className="w-5 h-5" />
                                                                     </button>
-                                                                    <button onClick={() => handleStatusChange(request.id, 'Rejeitada')} className="p-2 text-rose-500 hover:bg-rose-100 rounded-full" title="Rejeitar">
+                                                                    <button onClick={() => handleStatusChange(request.id, 'Rejeitada')} className="p-1.5 text-rose-500 hover:bg-rose-100 rounded-full transition-colors" title="Rejeitar">
                                                                         <XCircleIcon className="w-5 h-5" />
                                                                     </button>
                                                                 </>
                                                             )}
                                                             {request.status !== 'Pendente' && (
-                                                                <button onClick={() => handleStatusChange(request.id, 'Pendente')} className="p-2 text-gray-500 hover:bg-gray-200 rounded-full" title="Reverter para Pendente">
+                                                                <button onClick={() => handleStatusChange(request.id, 'Pendente')} className="p-1.5 text-gray-500 hover:bg-gray-200 rounded-full transition-colors" title="Reverter para Pendente">
                                                                     <UndoIcon className="w-5 h-5" />
                                                                 </button>
                                                             )}
-                                                            <button onClick={() => openModal('edit', request)} className="p-2 text-gray-500 hover:bg-gray-200 rounded-full" title="Editar">
+                                                            <button onClick={() => openModal('edit', request)} className="p-1.5 text-gray-500 hover:bg-gray-200 rounded-full transition-colors" title="Editar">
                                                                 <EditIcon className="w-5 h-5" />
                                                             </button>
-                                                            <button onClick={() => handleDelete(request.id)} className="p-2 text-gray-500 hover:bg-rose-100 hover:text-rose-600 rounded-full" title="Excluir">
+                                                            <button onClick={() => handleDelete(request.id)} className="p-1.5 text-gray-500 hover:bg-rose-100 hover:text-rose-600 rounded-full transition-colors" title="Excluir">
                                                                 <TrashIcon className="w-5 h-5" />
                                                             </button>
                                                         </div>
                                                     </td>
                                                 </tr>
                                             ))}
+                                            {filteredRequests.length === 0 && (
+                                                <tr>
+                                                    <td colSpan={5} className="p-8 text-center text-gray-500">
+                                                        Nenhuma solicitação encontrada.
+                                                    </td>
+                                                </tr>
+                                            )}
                                         </tbody>
                                     </table>
                                 </div>
