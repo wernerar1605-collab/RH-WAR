@@ -10,7 +10,7 @@ import Login from './components/Login';
 import ProfileList from './components/ProfileList';
 import Reports from './components/Reports';
 import { MenuIcon } from './components/icons';
-import { Employee, Candidate, Job, Stage, LeaveRequest, SystemUser } from './types';
+import { Employee, Candidate, Job, Stage, LeaveRequest, SystemUser, AccessLevel } from './types';
 
 // Helper to generate dynamic dates
 const today = new Date();
@@ -85,6 +85,43 @@ const mockLeaveRequests: LeaveRequest[] = [
     { id: 15, employee: mockEmployees[1], type: 'Férias', startDate: getDate(2, 1), endDate: getDate(6, 1), status: 'Pendente' },
 ];
 
+const ALL_PERMISSIONS = [
+    { id: 'manage_employees', label: 'Gerenciar Funcionários' },
+    { id: 'manage_recruitment', label: 'Gerenciar Recrutamento' },
+    { id: 'manage_leaves', label: 'Gerenciar Licenças' },
+    { id: 'manage_reviews', label: 'Gerenciar Avaliações' },
+    { id: 'view_reports', label: 'Visualizar Relatórios' },
+    { id: 'manage_users', label: 'Gerenciar Usuários' },
+    { id: 'manage_access', label: 'Gerenciar Níveis de Acesso' },
+];
+
+const mockAccessLevels: AccessLevel[] = [
+    { 
+        id: 1, 
+        name: 'Administrador', 
+        description: 'Acesso total ao sistema', 
+        permissions: ALL_PERMISSIONS.map(p => p.id) 
+    },
+    { 
+        id: 2, 
+        name: 'Gestora', 
+        description: 'Gerencia equipe, recrutamento e avaliações', 
+        permissions: ['manage_employees', 'manage_recruitment', 'manage_leaves', 'manage_reviews', 'view_reports'] 
+    },
+    { 
+        id: 3, 
+        name: 'Coordenadora', 
+        description: 'Gerencia operações do dia a dia e licenças', 
+        permissions: ['manage_employees', 'manage_leaves', 'view_reports'] 
+    },
+    { 
+        id: 4, 
+        name: 'Usuário', 
+        description: 'Acesso básico de visualização', 
+        permissions: ['manage_leaves'] // Permite ver a própria aba de licenças (que geralmente mostra as próprias licenças)
+    },
+];
+
 type View = 'dashboard' | 'employees' | 'recruitment' | 'leaves' | 'performance' | 'profiles' | 'reports';
 
 const App: React.FC = () => {
@@ -99,13 +136,14 @@ const App: React.FC = () => {
   const [stages, setStages] = useState<Stage[]>(mockStages);
   const [candidates, setCandidates] = useState<Candidate[]>(mockCandidates);
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>(mockLeaveRequests);
+  const [accessLevels, setAccessLevels] = useState<AccessLevel[]>(mockAccessLevels);
 
   const handleLoginSuccess = (user: Partial<SystemUser>) => {
     setIsAuthenticated(true);
     const role = user.role || '';
     setCurrentUserRole(role);
 
-    // Redireciona para a página correta baseado no nível de acesso
+    // Redireciona para a página correta baseado no nível de acesso inicial
     switch (role) {
         case 'Administrador':
         case 'Gestora':
@@ -115,7 +153,7 @@ const App: React.FC = () => {
             setActiveView('employees');
             break;
         case 'Usuário':
-            setActiveView('leaves'); // Usuário comum vai para Licenças para ver as suas
+            setActiveView('leaves');
             break;
         default:
             setActiveView('dashboard');
@@ -177,7 +215,7 @@ const App: React.FC = () => {
             />
         );
       case 'profiles':
-        return <ProfileList />;
+        return <ProfileList accessLevels={accessLevels} setAccessLevels={setAccessLevels} />;
       default:
         return (
           <Dashboard 
@@ -198,6 +236,7 @@ const App: React.FC = () => {
         isOpen={isSidebarOpen}
         setIsOpen={setIsSidebarOpen}
         userRole={currentUserRole}
+        accessLevels={accessLevels}
       />
       <main className="flex-1 flex flex-col h-full relative w-full transition-all duration-300 ease-in-out">
          {/* Mobile Header */}

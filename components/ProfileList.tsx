@@ -2,8 +2,14 @@
 import React, { useState } from 'react';
 import UserList from './UserList';
 import AccessLevelList from './AccessLevelList';
+import { AccessLevel } from '../types';
 
-const ProfileList: React.FC = () => {
+interface ProfileListProps {
+    accessLevels: AccessLevel[];
+    setAccessLevels: React.Dispatch<React.SetStateAction<AccessLevel[]>>;
+}
+
+const ProfileList: React.FC<ProfileListProps> = ({ accessLevels, setAccessLevels }) => {
     const [activeTab, setActiveTab] = useState<'users' | 'access_levels'>('users');
 
     const TabButton: React.FC<{ tab: 'users' | 'access_levels', label: string }> = ({ tab, label }) => (
@@ -30,7 +36,11 @@ const ProfileList: React.FC = () => {
                     </nav>
                 </div>
                 <div className="p-6">
-                    {activeTab === 'users' ? <UserList /> : <AccessLevelList />}
+                    {activeTab === 'users' ? (
+                        <UserList />
+                    ) : (
+                        <AccessLevelList accessLevels={accessLevels} setAccessLevels={setAccessLevels} />
+                    )}
                 </div>
             </div>
         </div>

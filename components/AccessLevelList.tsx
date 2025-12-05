@@ -14,41 +14,18 @@ const ALL_PERMISSIONS = [
     { id: 'manage_access', label: 'Gerenciar Níveis de Acesso' },
 ];
 
-const mockAccessLevels: AccessLevel[] = [
-    { 
-        id: 1, 
-        name: 'Administrador', 
-        description: 'Acesso total ao sistema', 
-        permissions: ALL_PERMISSIONS.map(p => p.id) 
-    },
-    { 
-        id: 2, 
-        name: 'Gestora', 
-        description: 'Gerencia equipe, recrutamento e avaliações', 
-        permissions: ['manage_employees', 'manage_recruitment', 'manage_leaves', 'manage_reviews', 'view_reports'] 
-    },
-    { 
-        id: 3, 
-        name: 'Coordenadora', 
-        description: 'Gerencia operações do dia a dia e licenças', 
-        permissions: ['manage_employees', 'manage_leaves', 'view_reports'] 
-    },
-    { 
-        id: 4, 
-        name: 'Usuário', 
-        description: 'Acesso básico de visualização', 
-        permissions: [] 
-    },
-];
-
 const emptyAccessLevel: Omit<AccessLevel, 'id'> = {
     name: '',
     description: '',
     permissions: []
 };
 
-const AccessLevelList: React.FC = () => {
-    const [accessLevels, setAccessLevels] = useState<AccessLevel[]>(mockAccessLevels);
+interface AccessLevelListProps {
+    accessLevels: AccessLevel[];
+    setAccessLevels: React.Dispatch<React.SetStateAction<AccessLevel[]>>;
+}
+
+const AccessLevelList: React.FC<AccessLevelListProps> = ({ accessLevels, setAccessLevels }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
     const [selectedLevel, setSelectedLevel] = useState<AccessLevel | null>(null);

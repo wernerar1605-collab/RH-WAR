@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { HomeIcon, UsersIcon, BriefcaseIcon, LeaveIcon, StarIcon, LogOutIcon, ProfileIcon, XIcon, ChartBarIcon } from './icons';
+import { AccessLevel } from '../types';
 
 type View = 'dashboard' | 'employees' | 'recruitment' | 'leaves' | 'performance' | 'profiles' | 'reports';
 
@@ -11,22 +12,34 @@ interface SidebarProps {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
   userRole: string;
+  accessLevels: AccessLevel[];
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, onLogout, isOpen, setIsOpen, userRole }) => {
+const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, onLogout, isOpen, setIsOpen, userRole, accessLevels }) => {
+  
+  // Define menu items mapped to specific permission keys
+  // Note: Dashboard is usually available to everyone or has a basic permission. 
+  // Here we assume if you are logged in, you can see Dashboard.
   const allNavItems = [
-    { id: 'dashboard', label: 'Visão Geral', icon: HomeIcon, allowedRoles: ['Administrador', 'Gestora'] },
-    { id: 'employees', label: 'Funcionários', icon: UsersIcon, allowedRoles: ['Administrador', 'Gestora', 'Coordenadora'] },
-    { id: 'recruitment', label: 'Recrutamento', icon: BriefcaseIcon, allowedRoles: ['Administrador', 'Gestora'] },
-    { id: 'leaves', label: 'Licenças', icon: LeaveIcon, allowedRoles: ['Administrador', 'Gestora', 'Coordenadora', 'Usuário'] },
-    { id: 'performance', label: 'Avaliações', icon: StarIcon, allowedRoles: ['Administrador', 'Gestora', 'Usuário'] },
-    { id: 'reports', label: 'Relatórios', icon: ChartBarIcon, allowedRoles: ['Administrador', 'Gestora', 'Coordenadora'] },
-    { id: 'profiles', label: 'Perfis', icon: ProfileIcon, allowedRoles: ['Administrador'] },
+    { id: 'dashboard', label: 'Visão Geral', icon: HomeIcon, requiredPermission: null }, 
+    { id: 'employees', label: 'Funcionários', icon: UsersIcon, requiredPermission: 'manage_employees' },
+    { id: 'recruitment', label: 'Recrutamento', icon: BriefcaseIcon, requiredPermission: 'manage_recruitment' },
+    { id: 'leaves', label: 'Licenças', icon: LeaveIcon, requiredPermission: 'manage_leaves' },
+    { id: 'performance', label: 'Avaliações', icon: StarIcon, requiredPermission: 'manage_reviews' },
+    { id: 'reports', label: 'Relatórios', icon: ChartBarIcon, requiredPermission: 'view_reports' },
+    { id: 'profiles', label: 'Perfis', icon: ProfileIcon, requiredPermission: 'manage_users' }, // Requires manage_users or manage_access
   ] as const;
 
-  const filteredNavItems = allNavItems.filter(item => 
-      !userRole || item.allowedRoles.includes(userRole)
-  );
+  // Find the current user's access level object to get their live permissions
+  const currentUserLevel = accessLevels.find(level => level.name === userRole);
+  const userPermissions = currentUserLevel ? currentUserLevel.permissions : [];
+
+  const filteredNavItems = allNavItems.filter(item => {
+      // If no permission required, show it
+      if (!item.requiredPermission) return true;
+      // If permission required, check if user has it
+      return userPermissions.includes(item.requiredPermission);
+  });
 
   const handleNavigation = (view: View) => {
     setActiveView(view);
