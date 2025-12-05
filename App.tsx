@@ -10,7 +10,7 @@ import Login from './components/Login';
 import ProfileList from './components/ProfileList';
 import Reports from './components/Reports';
 import { MenuIcon } from './components/icons';
-import { Employee, Candidate, Job, Stage, LeaveRequest } from './types';
+import { Employee, Candidate, Job, Stage, LeaveRequest, SystemUser } from './types';
 
 // Helper to generate dynamic dates
 const today = new Date();
@@ -91,6 +91,7 @@ const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [activeView, setActiveView] = useState<View>('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [currentUserRole, setCurrentUserRole] = useState<string>('');
   
   // Lifted States
   const [employees, setEmployees] = useState<Employee[]>(mockEmployees);
@@ -99,13 +100,31 @@ const App: React.FC = () => {
   const [candidates, setCandidates] = useState<Candidate[]>(mockCandidates);
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>(mockLeaveRequests);
 
-  const handleLoginSuccess = () => {
+  const handleLoginSuccess = (user: Partial<SystemUser>) => {
     setIsAuthenticated(true);
-    setActiveView('dashboard');
+    const role = user.role || '';
+    setCurrentUserRole(role);
+
+    // Redireciona para a página correta baseado no nível de acesso
+    switch (role) {
+        case 'Administrador':
+        case 'Gestora':
+            setActiveView('dashboard');
+            break;
+        case 'Coordenadora':
+            setActiveView('employees');
+            break;
+        case 'Usuário':
+            setActiveView('leaves'); // Usuário comum vai para Licenças para ver as suas
+            break;
+        default:
+            setActiveView('dashboard');
+    }
   };
 
   const handleLogout = () => {
     setIsAuthenticated(false);
+    setCurrentUserRole('');
   };
 
   if (!isAuthenticated) {
@@ -177,7 +196,8 @@ const App: React.FC = () => {
         setActiveView={setActiveView} 
         onLogout={handleLogout}
         isOpen={isSidebarOpen}
-        setIsOpen={setIsSidebarOpen} 
+        setIsOpen={setIsSidebarOpen}
+        userRole={currentUserRole}
       />
       <main className="flex-1 flex flex-col h-full relative w-full transition-all duration-300 ease-in-out">
          {/* Mobile Header */}

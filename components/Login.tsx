@@ -1,7 +1,9 @@
+
 import React, { useState } from 'react';
+import { SystemUser } from '../types';
 
 interface LoginProps {
-  onLoginSuccess: () => void;
+  onLoginSuccess: (user: Partial<SystemUser>) => void;
 }
 
 const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
@@ -9,11 +11,24 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
+  // Simulação de usuários para login com Roles definidos
+  const validUsers = [
+    { login: 'admin', password: 'admin', role: 'Administrador', name: 'Administrador' },
+    { login: 'gestora', password: 'wv160517', role: 'Gestora', name: 'Maria Silva' },
+    { login: 'coordenadora', password: 'wv160517', role: 'Coordenadora', name: 'Fernanda Souza' },
+    { login: 'usuario', password: 'wv160517', role: 'Usuário', name: 'João Pereira' }
+  ];
+
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (login === 'admin' && password === 'admin') {
+    
+    // Encontra o usuário completo
+    const user = validUsers.find(u => u.login === login && u.password === password);
+
+    if (user) {
       setError('');
-      onLoginSuccess();
+      // Passa o usuário encontrado (com a role) para o callback
+      onLoginSuccess(user as Partial<SystemUser>);
     } else {
       setError('Login ou senha inválidos.');
     }

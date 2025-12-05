@@ -13,6 +13,30 @@ const mockUsers: SystemUser[] = [
     avatar: 'https://picsum.photos/seed/admin/200', 
     role: 'Administrador' 
   },
+  { 
+    id: 2, 
+    name: 'Maria Silva (Gestora)', 
+    login: 'gestora', 
+    password: 'wv160517', 
+    avatar: 'https://i.pravatar.cc/150?u=gestora', 
+    role: 'Gestora' 
+  },
+  { 
+    id: 3, 
+    name: 'Fernanda Souza (Coord.)', 
+    login: 'coordenadora', 
+    password: 'wv160517', 
+    avatar: 'https://i.pravatar.cc/150?u=coord', 
+    role: 'Coordenadora' 
+  },
+  { 
+    id: 4, 
+    name: 'João Pereira (Usuário)', 
+    login: 'usuario', 
+    password: 'wv160517', 
+    avatar: 'https://i.pravatar.cc/150?u=user', 
+    role: 'Usuário' 
+  },
 ];
 
 const toBase64 = (file: File): Promise<string> => new Promise((resolve, reject) => {

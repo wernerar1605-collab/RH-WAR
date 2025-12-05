@@ -10,18 +10,23 @@ interface SidebarProps {
   onLogout: () => void;
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
+  userRole: string;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, onLogout, isOpen, setIsOpen }) => {
-  const navItems = [
-    { id: 'dashboard', label: 'Visão Geral', icon: HomeIcon },
-    { id: 'employees', label: 'Funcionários', icon: UsersIcon },
-    { id: 'recruitment', label: 'Recrutamento', icon: BriefcaseIcon },
-    { id: 'leaves', label: 'Licenças', icon: LeaveIcon },
-    { id: 'performance', label: 'Avaliações', icon: StarIcon },
-    { id: 'reports', label: 'Relatórios', icon: ChartBarIcon },
-    { id: 'profiles', label: 'Perfis', icon: ProfileIcon },
+const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, onLogout, isOpen, setIsOpen, userRole }) => {
+  const allNavItems = [
+    { id: 'dashboard', label: 'Visão Geral', icon: HomeIcon, allowedRoles: ['Administrador', 'Gestora'] },
+    { id: 'employees', label: 'Funcionários', icon: UsersIcon, allowedRoles: ['Administrador', 'Gestora', 'Coordenadora'] },
+    { id: 'recruitment', label: 'Recrutamento', icon: BriefcaseIcon, allowedRoles: ['Administrador', 'Gestora'] },
+    { id: 'leaves', label: 'Licenças', icon: LeaveIcon, allowedRoles: ['Administrador', 'Gestora', 'Coordenadora', 'Usuário'] },
+    { id: 'performance', label: 'Avaliações', icon: StarIcon, allowedRoles: ['Administrador', 'Gestora', 'Usuário'] },
+    { id: 'reports', label: 'Relatórios', icon: ChartBarIcon, allowedRoles: ['Administrador', 'Gestora', 'Coordenadora'] },
+    { id: 'profiles', label: 'Perfis', icon: ProfileIcon, allowedRoles: ['Administrador'] },
   ] as const;
+
+  const filteredNavItems = allNavItems.filter(item => 
+      !userRole || item.allowedRoles.includes(userRole)
+  );
 
   const handleNavigation = (view: View) => {
     setActiveView(view);
@@ -48,12 +53,15 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, onLogout, 
              <XIcon className="w-6 h-6" />
           </button>
         </div>
+        <div className="px-6 mb-4">
+             <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Menu ({userRole})</span>
+        </div>
         <nav className="flex-1 px-4 py-2">
           <ul className="space-y-2">
-            {navItems.map((item) => (
+            {filteredNavItems.map((item) => (
               <li key={item.id}>
                 <button
-                  onClick={() => handleNavigation(item.id)}
+                  onClick={() => handleNavigation(item.id as View)}
                   className={`w-full flex items-center py-2 px-4 rounded-lg text-left transition-colors duration-200 ${
                     activeView === item.id
                       ? 'bg-indigo-600 text-white'
